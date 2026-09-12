@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'Download TRIXTERMS', description: 'D
 export const dynamic = 'force-dynamic';
 function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: string }) {
   return <article className="portal-panel"><Download aria-hidden="true" /><h3>{title}</h3>
-    <p>{artifact.filename} · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MB</p>
+    <p>{title} · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MB</p>
     <a className="button button-primary" href={artifact.url} rel="noopener noreferrer">Download {title}</a>
     <details><summary>SHA-256 checksum</summary><code className="checksum">{artifact.sha256}</code></details>
   </article>;
@@ -42,7 +42,7 @@ export default function DownloadPage() {
           {downloads?.fullClient ? <p>Download the full client and extract the entire archive into a writable folder. Keep its files together. If you download the launcher separately, place it in that same folder.</p>
             : downloads?.launcher ? <p>Download the launcher into your chosen writable installation folder. If it comes in a ZIP, extract it there first. The launcher can be the only file in this folder; it downloads and verifies the game files for you.</p>
               : <p>Installation instructions will match the published package. A launcher-only release installs the game into your chosen folder; a full-client archive is extracted there.</p>}
-          {downloads && <p>Open <code>TrixterMS Public Beta Launcher.exe</code> and keep that filename unchanged.</p>}
+          {downloads && <p>Open the supplied launcher executable without renaming it.</p>}
         </article>
         <article className="portal-panel"><span className="section-index">03</span><h3>Launch and sign in</h3><p>Let the launcher check your files. Press Play, then enter your ID and password on MapleStory’s native login screen.</p></article>
       </div>

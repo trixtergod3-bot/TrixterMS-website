@@ -1,6 +1,6 @@
 # TRIXTERMS production candidate verification
 
-Scope: `codex/web-production-candidate-v1`, based on preserved website main `81856c608dab33346f8f915dcd5219c893f09e01`. Candidate build ID: `XwqHzd1Qc5ACXy3xncnoN`. Node 24.19.0, npm 11.17.0; Next.js 16.3.3 / React 19.2.8. This is a production Node build served locally on port 4316. It is not a Hostinger deployment.
+Scope: `codex/web-production-candidate-v1`, based on preserved website main `81856c608dab33346f8f915dcd5219c893f09e01`. Candidate build ID: `0DWz-fvRsP1ynbzc-a0Db`. Node 24.19.0, npm 11.17.0; Next.js 16.3.3 / React 19.2.8. This is a production Node build served locally on port 4316. It is not a Hostinger deployment.
 
 ## Implemented
 
@@ -19,10 +19,10 @@ Scope: `codex/web-production-candidate-v1`, based on preserved website main `818
 | `npm ci --include=dev --cache ../web-portal-beta-v1/local/npm-cache --no-audit --no-fund` | PASS, clean lockfile install; no lockfile change |
 | `npm run build` | PASS, production webpack build; final build ID above |
 | `npm run lint` / `npm run typecheck` | PASS |
-| `npm test` | PASS, 56/56 including status/channel projection/freshness, origin/metadata, registration, launcher, AP and publication boundaries |
+| `npm test` | PASS, 58/58 including status/channel projection/freshness, origin/metadata, registration, launcher, AP and publication boundaries |
 | `npm run check:security` | PASS, source and 55 browser bundles; final staged inventory scan recorded with the source checkpoint |
 | `npm audit --omit=dev --json` | PASS, 0 reported production dependency vulnerabilities on 2026-09-12 |
-| `node tools/verify-browser.mjs` | PASS, 120 route/viewport checks, 27 internal links, 10 interaction/query/API checks, 0 browser errors; final run started 2026-09-12T20:24:58.363Z |
+| `node tools/verify-browser.mjs` | PASS, 120 route/viewport checks, 27 internal links, 10 interaction/query/API checks, 0 browser errors; full sweep started 2026-09-12T20:24:58.363Z on build XwqHzd1Qc5ACXy3xncnoN; the final download-label-only delta was then covered by two actual SSR render tests and the 11-route production suite on the final build |
 | `node tools/verify-production.mjs` | PASS, 16 grouped checks; 11 major routes' HTTPS canonical/OG/favicon/indexing/security metadata, robots/sitemap, www-only 308 retaining path/query, unrelated-host 200, assets and white hover text; 0 console/page errors |
 | Independent review | PASS, 44 route/width visits across 22 routes at 1440/390; exact public brand, one h1, no overflow/broken images/page errors, real actions, hover/nav styling. Final build delta: 2 homepage viewports plus favicon resource/metadata, no console errors |
 | Manual visual inspection | Desktop and phone captures inspected; final mobile portrait selects its own asset and keeps complete characters/portal visible |
@@ -30,7 +30,7 @@ Scope: `codex/web-production-candidate-v1`, based on preserved website main `818
 
 The broader browser suite covers 24 routes at 320/390/768/1024/1440, all internal links/anchors, mobile menu, ranking tabs, achievement search, malformed query handling, 404, all eleven unavailable GET APIs and disabled registration. No game service received account writes. Synthetic unit-test data is not used by production pages.
 
-The first passes identified and corrected a type assertion, security-scanner-triggering synthetic credential URL literals, inherited hover/nav colors, framing that clipped the character/portal, and a missing favicon metadata declaration. The publication scan was not weakened. No unresolved local validation failure is carried into the checkpoint.
+The first passes identified and corrected a type assertion, security-scanner-triggering synthetic credential URL literals, inherited hover/nav colors, framing that clipped the character/portal, and a missing favicon metadata declaration. The publication scan was not weakened. Enabled-download presentation was also rendered with isolated synthetic metadata for both launcher-only and full-client cases. The actual download URL/filename stays intact, while public labels use the approved brand. No environment value, game service or public preview was replaced by a fixture. No unresolved local validation failure is carried into the checkpoint.
 
 ## Local evidence and limits
 
