@@ -4,6 +4,14 @@ Recorded 2026-09-12 for `codex/web-production-candidate-v1`. This document recor
 
 **Direction approved; completed candidate owner QA pending.** Approval of the reference does not mean the current responsive implementation, artwork derivative, live integrations, launcher release or public deployment has been accepted. Keep those evidence and acceptance states independent.
 
+## Selected candidate and preview
+
+The owner reaffirmed this midnight/navy and electric cyan direction on 2026-09-12 after multiple website candidates had been prepared. Use **`codex/web-production-candidate-v1`** in `local/web-production-candidate-v1`, with the local production preview at **http://127.0.0.1:4316**. Its implemented website source checkpoint is `0c7e134e87cf07af57611da08330fc982068da99`; later documentation-only checkpoints do not change that application build.
+
+The separate `codex/website-final-beta-visual-pass` candidate and port 4315 retain the earlier autumn/village treatment. They do not replace this approved visual target. Preserve their work separately; evaluate any useful functional fixes before applying them to the selected candidate while retaining this document's artwork, palette, branding and route requirements. A branch name containing “final” does not override the owner's visual lock.
+
+This selection does not authorize a main merge, hosting deployment, DNS change or public cutover. The finished responsive candidate still needs its own owner acceptance.
+
 ## Public name
 
 The public brand is **TRIXTERMS**, one word, all capital letters. Use that exact spelling in the primary wordmark and every public mention of the brand: header/footer, page copy, navigation context, buttons, accessible names, image descriptions, browser titles, metadata, social cards and player-facing documentation.
