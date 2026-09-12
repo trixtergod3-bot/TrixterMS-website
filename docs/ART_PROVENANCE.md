@@ -1,0 +1,9 @@
+# Original portal hero
+
+Generated 2026-09-12 with the built-in imagegen tool, with no reference images. No external server artwork was used. Local PNG master: 1672 x 941, SHA-256 DC8A1A9FCC6FA3F857CFE16DDC480C3403C2C2CAF0EB3F628465C0DEB009617E. Published derivative: public/art/trixter-world.webp, 240,778 bytes, same dimensions, WebP quality 86. This is original website concept art, not an implemented game-map screenshot.
+
+Exact generation prompt:
+
+> Use case: stylized-concept. Asset type: original TrixterMS fantasy game web portal hero background. Create a beautifully art-directed original 2D storybook MMORPG landscape, wide 16:9 composition at 1920x1080 if supported. A whimsical floating island village with warm golden lanterns, small curved-roof timber houses, luminous turquoise streams spilling as waterfalls, a distant crystalline spire, enormous soft autumn maple trees framing the scene, tiny glowing motes, and misty islands receding into a dusky blue sky. Hand-painted high-end game key art with charming proportions, crisp foreground silhouettes, painterly atmosphere and jewel-toned details; inviting, adventurous, nostalgic. Leave the left third dark teal with subtle tree silhouettes and generous quiet space for website typography, place the village/spire focal point on the right center. Palette: deep blue-green, forest teal, warm cream/gold light, touches of amber maple leaves. No text, lettering, logos, watermark, UI, existing characters, copied locations, game screenshots, or recognizable proprietary assets. Entirely original world imagery inspired only by the general charm of side-scrolling fantasy adventures, no reference images.
+
+The logo uses a Lucide leaf and an HTML wordmark. Feature-card symbols are Lucide vectors; dedicated painted class panels are reserved in the visual brief. Other route headers reuse the original hero with CSS treatment. The image generator returned 1672 x 941; no higher native resolution is claimed.

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TrixterMS">
+  <defs>
+    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#55f2df"/>
+      <stop offset="1" stop-color="#786dff"/>
+    </linearGradient>
+  </defs>
+  <path fill="#070a10" d="M4 4h46l10 10v46H14L4 50z"/>
+  <path fill="none" stroke="url(#g)" stroke-width="3" d="M5.5 5.5h43.9l9.1 9.1v43.9H14.6l-9.1-9.1z"/>
+  <path fill="url(#g)" d="M15 16h35v9H37v25H27V25H15z"/>
+</svg>
