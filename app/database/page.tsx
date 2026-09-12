@@ -6,7 +6,7 @@ import { readPortal } from '@/lib/portal/data';
 
 export const metadata: Metadata = {
   title: 'Game database',
-  description: 'Find items, equipment, monsters and bosses in the TrixterMS public game catalog.',
+  description: 'Find items, equipment, monsters and bosses in the TRIXTERMS public game catalog.',
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -35,7 +35,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Pro
   return (
     <main>
       <PageHero eyebrow="The adventurer’s archive" title="Know your next discovery."
-        description="Explore the equipment, creatures and encounters that shape your journey through TrixterMS." />
+        description="Explore the equipment, creatures and encounters that shape your journey through TRIXTERMS." />
       <section className="shell portal-section" aria-label="Search the game database">
         <DatabaseBrowser category={category} query={query} page={page} itemResponse={itemResponse} mobResponse={mobResponse} />
       </section>

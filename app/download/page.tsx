@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Download, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { PageHero } from '@/components/shared/page-hero';
 import { getPublicIntegrations, type DownloadArtifact } from '@/lib/portal/integrations';
-export const metadata: Metadata = { title: 'Download TrixterMS', description: 'Download the TrixterMS beta client and launcher, check release information, and start playing.' };
+export const metadata: Metadata = { title: 'Download TRIXTERMS', description: 'Download the TRIXTERMS beta client and launcher, check release information, and start playing.' };
 export const dynamic = 'force-dynamic';
 function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: string }) {
   return <article className="portal-panel"><Download aria-hidden="true" /><h3>{title}</h3>
@@ -15,11 +15,11 @@ function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: stri
 export default function DownloadPage() {
   const { downloads } = getPublicIntegrations();
   return <main>
-    <PageHero eyebrow="TrixterMS · GMS v111.1" title="Your next adventure."
-      description="Get the game, create your account, and make your mark on TrixterMS."
+    <PageHero eyebrow="TRIXTERMS · GMS v111.1" title="Your next adventure."
+      description="Get the game, create your account, and make your mark on TRIXTERMS."
       aside={<div className="hero-stat"><Gamepad2 aria-hidden="true" /><strong>Windows</strong><span>native game client</span></div>} />
     <section className="shell portal-section" aria-labelledby="download-title">
-      <div className="section-heading"><div><span className="eyebrow">Download center</span><h2 id="download-title">Get TrixterMS</h2></div>
+      <div className="section-heading"><div><span className="eyebrow">Download center</span><h2 id="download-title">Get TRIXTERMS</h2></div>
         <Link className="button button-secondary" href="/patch-notes">Patch notes</Link></div>
       {downloads ? <>
         <p>Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion}</p>
@@ -37,7 +37,7 @@ export default function DownloadPage() {
       <div className="section-heading"><div><span className="eyebrow">Three steps to play</span><h2 id="installation-title">A fresh start.</h2></div></div>
       <div className="portal-grid portal-grid-three">
         <article className="portal-panel"><span className="section-index">01</span><h3>Create your account</h3><p>Register your account ID and password through the registration page when it opens.</p><Link href="/register">Account registration</Link></article>
-        <article className="portal-panel"><span className="section-index">02</span><h3>Install the game</h3><p>Download the full client, extract the entire archive into a writable folder, and open the included TrixterMS launcher. Keep its files together.</p></article>
+        <article className="portal-panel"><span className="section-index">02</span><h3>Install the game</h3><p>Download the full client, extract the entire archive into a writable folder, and open the included TRIXTERMS launcher. Keep its files together.</p></article>
         <article className="portal-panel"><span className="section-index">03</span><h3>Launch and sign in</h3><p>Let the launcher check your files. Press Play, then enter your ID and password on MapleStory’s native login screen.</p></article>
       </div>
     </section>

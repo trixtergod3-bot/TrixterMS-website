@@ -5,8 +5,8 @@ import { PageHero } from '@/components/shared/page-hero';
 import { getPublicIntegrations } from '@/lib/portal/integrations';
 
 export const metadata: Metadata = {
-  title: 'Support TrixterMS',
-  description: 'Donation availability and future support information for TrixterMS.',
+  title: 'Support TRIXTERMS',
+  description: 'Donation availability and future support information for TRIXTERMS.',
 };
 
 export default function DonatePage() {

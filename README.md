@@ -1,6 +1,8 @@
-# TrixterMS beta web portal
+# TRIXTERMS beta web portal
 
 Next.js 16.3.3, React 19.2.8, TypeScript and responsive CSS. This dedicated website repository is adapted from the preserved Website V2 source. The original website worktrees and game server remain untouched.
+
+Latest owner candidate: [final beta visual pass](docs/FINAL_BETA_VISUAL_PASS.md). Public brand spelling is exactly **TRIXTERMS**; technical repository identifiers, paths and configuration names retain their existing spelling.
 
 ## Run locally
 

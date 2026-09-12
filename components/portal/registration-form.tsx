@@ -66,6 +66,6 @@ export function RegistrationForm({ enabled }: { enabled: boolean }) {
       </button>
     </fieldset>
     {message && <output aria-live="polite">{message}</output>}
-    {created && <Link className="button button-secondary" href="/download">Download TrixterMS</Link>}
+    {created && <Link className="button button-secondary" href="/download">Download TRIXTERMS</Link>}
   </form>;
 }
