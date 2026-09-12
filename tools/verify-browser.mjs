@@ -27,12 +27,21 @@ function isExpectedMissingResourceConsole(text,location,expected404Url){
   &&location.lineNumber===0&&location.columnNumber===0
   &&/^Failed to load resource: the server responded with a status of 404 \((?:Not Found)?\)$/.test(text);
 }
+function isExpectedRankingUnavailableConsole(text,location,pageUrl){
+ try{
+  const page=new URL(pageUrl),resource=new URL(location.url);
+  return page.pathname==='/rankings'&&resource.origin===page.origin&&resource.pathname==='/api/rankings'
+   &&location.lineNumber===0&&location.columnNumber===0
+   &&/^Failed to load resource: the server responded with a status of 503 \((?:Service Unavailable)?\)$/.test(text);
+ }catch{return false;}
+}
 function trackBrowserErrors(page,report,expected404Url=null){
  page.on('pageerror',error=>report.errors.push(error.message));
  page.on('console',message=>{
   if(message.type()!=='error')return;
   const text=message.text();const location=message.location();
   if(isExpectedMissingResourceConsole(text,location,expected404Url))return;
+  if(isExpectedRankingUnavailableConsole(text,location,page.url())){report.expectedRankingOutages++;return;}
   report.consoleErrors.push({page:page.url(),text,location});
  });
 }
@@ -59,10 +68,24 @@ function brandSelfTest(){
  assert.equal(isExpectedMissingResourceConsole(missingText,{...missingLocation,lineNumber:12},missingUrl),false);
  assert.equal(isExpectedMissingResourceConsole('Application error',missingLocation,missingUrl),false);
  assert.equal(isExpectedMissingResourceConsole(missingText.replace('404','503'),missingLocation,missingUrl),false);
+ const rankingsPage='http://127.0.0.1:4315/rankings';
+ const unavailableText='Failed to load resource: the server responded with a status of 503 (Service Unavailable)';
+ const rankingsLocation={url:'http://127.0.0.1:4315/api/rankings?page=1&limit=50',lineNumber:0,columnNumber:0};
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText,rankingsLocation,rankingsPage),true);
+ for(const path of ['/api/rankings/daily','/api/rankings/weekly','/api/status','/rankings','/api/rankings/asset.js']){
+  assert.equal(isExpectedRankingUnavailableConsole(unavailableText,{...rankingsLocation,url:'http://127.0.0.1:4315'+path},rankingsPage),false);
+ }
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText,{...rankingsLocation,url:'https://example.invalid/api/rankings'},rankingsPage),false);
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText,{...rankingsLocation,lineNumber:12},rankingsPage),false);
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText,{...rankingsLocation,columnNumber:2},rankingsPage),false);
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText,rankingsLocation,'http://127.0.0.1:4315/'),false);
+ assert.equal(isExpectedRankingUnavailableConsole('Application error',rankingsLocation,rankingsPage),false);
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText.replace('503','500'),rankingsLocation,rankingsPage),false);
+ assert.equal(isExpectedRankingUnavailableConsole(unavailableText.replace('503','404'),rankingsLocation,rankingsPage),false);
 }
 brandSelfTest();
 if(process.argv.includes('--brand-self-test')){
- console.log('Brand checker self-test passed: canonical spelling, technical exclusions, adjacent copy, and strict expected-404 console filter.');
+ console.log('Browser checker self-test passed: canonical spelling, technical exclusions, adjacent copy, strict expected-404 filter, and exact rankings-503 filter.');
  process.exit(0);
 }
 const { chromium }=await import('@playwright/test');
@@ -127,6 +150,17 @@ async function verifyFavicons(page){
  }
  return checks;
 }
+async function waitForPageReady(page){
+ // Periodic public-data requests are allowed to continue after the document is ready.
+ await page.waitForLoadState('load');
+ await page.locator('h1').waitFor({state:'visible'});
+ await page.locator('main[aria-busy="true"],section[aria-label="Loading rankings"]').waitFor({state:'hidden'});
+ if(new URL(page.url()).pathname==='/rankings'){
+  await page.getByRole('navigation',{name:'Ranking pages'}).waitFor({state:'visible'});
+  await page.getByRole('button',{name:'Refresh',exact:true}).waitFor({state:'visible'});
+ }
+ await page.evaluate(()=>document.fonts.ready.then(()=>undefined));
+}
 const base=process.env.PORTAL_QA_URL??'http://127.0.0.1:4315';
 if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw new Error('QA must target loopback');
 const routes=['/','/download','/register','/rankings','/rankings/daily','/rankings/weekly','/achievements','/database','/free-market','/vote','/donate','/discord','/news','/character/PortalTest','/status','/classes','/features','/guide','/patch-notes','/players','/events','/boss-records','/live-world','/database/rare-drops'];
@@ -134,14 +168,15 @@ const screenshots=new Set(['/','/achievements','/download','/register','/ranking
 const allWidthScreenshots=new Set(['/','/classes']);
 await mkdir('local/qa',{recursive:true});
 const browser=await chromium.launch({channel:process.env.PORTAL_QA_BROWSER??'chrome',headless:true});
-const report={checkedAt:new Date().toISOString(),base,canonicalBrand:PUBLIC_BRAND,brandSelfTest:true,favicons:[],routes:[],links:[],errors:[],consoleErrors:[],interactions:[]};
+const report={checkedAt:new Date().toISOString(),base,canonicalBrand:PUBLIC_BRAND,brandSelfTest:true,favicons:[],routes:[],links:[],errors:[],consoleErrors:[],expectedRankingOutages:0,interactions:[]};
 try{
  const linkSet=new Set();
  for(const width of [1440,1024,768,390,320]){
   const context=await browser.newContext({viewport:{width,height:width===1440?1000:844},deviceScaleFactor:1,reducedMotion:'reduce'});
   const page=await context.newPage();trackBrowserErrors(page,report);
   for(const route of routes){
-   const response=await page.goto(base+route,{waitUntil:'networkidle'});
+   const response=await page.goto(base+route,{waitUntil:'domcontentloaded'});
+   await waitForPageReady(page);
    assert.equal(response.status(),200,route+' HTTP');
    assert.equal(await page.locator('h1').count(),1,route+' exactly one h1');
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
@@ -159,7 +194,7 @@ try{
   await context.close();
  }
  const page=await browser.newPage();trackBrowserErrors(page,report);
- for(const href of linkSet){const url=new URL(href,base);const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});assert.equal(response.status(),200,'Broken internal link '+href);if(url.hash){const exists=await page.evaluate(id=>!!document.getElementById(id),decodeURIComponent(url.hash.slice(1)));assert.equal(exists,true,'Broken anchor '+href);}report.links.push(href)}
+ for(const href of linkSet){const url=new URL(href,base);const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});await waitForPageReady(page);assert.equal(response.status(),200,'Broken internal link '+href);if(url.hash){const exists=await page.evaluate(id=>!!document.getElementById(id),decodeURIComponent(url.hash.slice(1)));assert.equal(exists,true,'Broken anchor '+href);}report.links.push(href)}
  await page.goto(base);report.favicons=await verifyFavicons(page);await page.getByRole('button',{name:'Daily leaders',exact:true}).click();await page.getByRole('heading',{name:'A new challenge. Every day.'}).waitFor();await verifyPageBrand(page,'home daily leaders selected');await page.getByRole('button',{name:'Weekly leaders',exact:true}).click();await page.getByRole('heading',{name:'A whole week to make your mark.'}).waitFor();await verifyPageBrand(page,'home weekly leaders selected');report.interactions.push('home daily and weekly leader tabs');
  await page.goto(base+'/achievements');await page.getByLabel('Find an achievement').fill('First Steps');assert.equal(await page.locator('.achievement-card').count(),1);await page.getByLabel('Find an achievement').fill('no-matching-achievement');await page.getByRole('heading',{name:'A different path, perhaps?'}).waitFor();report.interactions.push('achievement catalog search and empty result');
  for(const path of ['/database?type=maps','/database?type=bogus&page=-1&q=%00test','/free-market?category=%0A&page=99999999','/rankings/daily?date=2026-02-30','/rankings?sort=fame&job=112','/rankings/weekly?weekStart=2026-09-07']){const response=await page.goto(base+path);assert.equal(response.status(),200,path);report.interactions.push('query '+path)}
@@ -172,5 +207,5 @@ try{
  assert.deepEqual(report.consoleErrors,[],'browser console errors');
  report.interactions.push('all 11 APIs fail closed without backend; registration disabled; 404 works');
  await writeFile('local/qa/browser-report.json',JSON.stringify(report,null,2));
- console.log(JSON.stringify({routeViewportChecks:report.routes.length,brandChecks:report.routes.length,favicons:report.favicons.length,internalLinks:report.links.length,interactions:report.interactions.length,errors:report.errors.length,consoleErrors:report.consoleErrors.length}));
+ console.log(JSON.stringify({routeViewportChecks:report.routes.length,brandChecks:report.routes.length,favicons:report.favicons.length,internalLinks:report.links.length,interactions:report.interactions.length,errors:report.errors.length,consoleErrors:report.consoleErrors.length,expectedRankingOutages:report.expectedRankingOutages}));
 }finally{await browser.close();}

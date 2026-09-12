@@ -15,6 +15,7 @@ next-env.d.ts
 *.exe
 *.dll
 *.sql
+!bridge/schema.sql
 *.zip
 *.rar
 

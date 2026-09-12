@@ -4,6 +4,8 @@ import { portalRequest, readCharacterAchievementsVerified, readPortal, validateP
 
 const status = { online: true, playersOnline: 12, version: "111.1", rates: { exp: null, meso: null, drop: null } };
 const row = { rank: 1, name: "Example", level: 30, jobId: 100, jobName: "Warrior", fame: 0, score: "9223372036854775807" };
+const rankingRow = { ...row, exp: "9223372036854775807", guildName: null };
+const rankingPage = { entries: [rankingRow], total: 1, page: 1, pageSize: 50 };
 const unlockedAt = "2026-09-12T10:00:00.000Z";
 const achievementDefinition = { key: "TEST_LEVEL_010", category: "LEVELING", name: "Matched live title", description: "Test-only catalog definition.", eventKey: "progress.level", dimension: "all", aggregation: "SNAPSHOT", threshold: "10", points: 10, displayOrder: 10, enabled: true };
 const secondDefinition = { ...achievementDefinition, key: "TEST_LEVEL_030", threshold: "30", points: 20, displayOrder: 20 };
@@ -82,14 +84,14 @@ void test("public reader rejects unknown routes and query injection before fetch
 });
 
 void test("BIGINT strings remain exact and unsafe numeric counters are rejected", () => {
-  const result = validatePortalData("rankings", { entries: [row], total: 1 }) as { entries: { score: string }[] };
+  const result = validatePortalData("rankings", rankingPage) as { entries: { score: string }[] };
   assert.equal(result.entries[0].score, "9223372036854775807");
-  for (const score of [9223372036854776000, "9223372036854775808", "-1", "01", "1e10"]) assert.throws(() => validatePortalData("rankings", { entries: [{ ...row, score }], total: 1 }));
+  for (const score of [9223372036854776000, "9223372036854775808", "-1", "01", "1e10"]) assert.throws(() => validatePortalData("rankings", { ...rankingPage, entries: [{ ...rankingRow, score }] }));
 });
 
 void test("backend payloads are projected to public fields only", () => {
-  const result = validatePortalData("rankings", { entries: [{ ...row, accountid: 7, password: "private" }], total: 1, database: "private" });
-  assert.deepEqual(result, { entries: [row], total: 1 });
+  const result = validatePortalData("rankings", { ...rankingPage, entries: [{ ...rankingRow, accountid: 7, password: "private", id: 42, world: 0 }], database: "private" });
+  assert.deepEqual(result, rankingPage);
   assert.deepEqual(validatePortalData("status", { ...status, accounts: ["private"] }), status);
 });
 
@@ -101,7 +103,7 @@ void test("tournament winners require finalized rank-one evidence", () => {
   assert.throws(() => validatePortalData("daily", { ...daily, date: null }));
   assert.doesNotThrow(() => validatePortalData("daily", { ...daily, finalized: true, winner: "Example" }));
   assert.throws(() => validatePortalData("daily", { ...daily, entries: [{ ...row, rank: 101 }] }));
-  assert.throws(() => validatePortalData("rankings", { entries: [row, row], total: 2 }));
+  assert.throws(() => validatePortalData("rankings", { ...rankingPage, entries: [rankingRow, rankingRow], total: 2 }));
 });
 
 void test("upstream character identity and requested historical period must match", async (t) => {

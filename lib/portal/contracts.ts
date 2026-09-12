@@ -21,8 +21,11 @@ export interface LeaderboardEntry {
   jobName: string | null;
   fame: number;
   score: string | null;
+  /** Exact persisted EXP; mandatory for overall rankings, absent on legacy competitions. */
+  exp?: string;
+  guildName?: string | null;
 }
-export interface RankingsData { entries: LeaderboardEntry[]; total: number | null }
+export interface RankingsData { entries: LeaderboardEntry[]; total: number | null; page?: number; pageSize?: number }
 export interface TournamentData extends RankingsData {
   metric: string;
   date: string | null;

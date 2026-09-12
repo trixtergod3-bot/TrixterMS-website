@@ -44,12 +44,14 @@ function timestamp(value: unknown): string { const result = string(value, 35); i
 function zone(value: unknown): string { const result = string(value, 64); new Intl.DateTimeFormat("en", { timeZone: result }); return result; }
 function list<T>(value: unknown, parse: (v: unknown) => T, max = 100): T[] { if (!Array.isArray(value) || value.length > max) throw new Error("Invalid list"); return value.map(parse); }
 function oneOf<T extends string>(value: unknown, values: readonly T[]): T { if (!values.includes(value as T)) throw new Error("Invalid enum"); return value as T; }
-function entry(value: unknown) {
+function entry(value: unknown, displayName = false) {
   const v = object(value);
-  return { rank: integer(v.rank, 1), name: name(v.name), level: integer(v.level, 1, 1000), jobId: integer(v.jobId, 0, 99999), jobName: nullable(v.jobName, string), fame: integer(v.fame, -2147483648, 2147483647), score: nullable(v.score, decimal) };
+  const characterName = displayName ? string(v.name, 13) : name(v.name);
+  if (characterName.length === 0) throw new Error("Invalid display name");
+  return { rank: integer(v.rank, 1), name: characterName, level: integer(v.level, 1, 1000), jobId: integer(v.jobId, 0, 99999), jobName: nullable(v.jobName, string), fame: integer(v.fame, -2147483648, 2147483647), score: nullable(v.score, decimal) };
 }
-function leaderboard(value: unknown) {
-  const entries = list(value, entry);
+function leaderboard(value: unknown, displayName = false) {
+  const entries = list(value, (row) => entry(row, displayName));
   if (new Set(entries.map((row) => row.rank)).size !== entries.length || new Set(entries.map((row) => row.name.toLowerCase())).size !== entries.length) throw new Error("Duplicate standing");
   return entries;
 }
@@ -95,7 +97,16 @@ export function validatePortalData(kind: Kind, value: unknown): unknown {
   const v = object(value);
   switch (kind) {
     case "status": { const rates = object(v.rates); const rate = (x: unknown) => { if (typeof x !== "number" || !Number.isFinite(x) || x < 0 || x > 1000000) throw new Error("Invalid rate"); return x; }; return { online: nullable(v.online, boolean), playersOnline: nullable(v.playersOnline, integer), version: nullable(v.version, (x) => string(x, 40)), rates: { exp: nullable(rates.exp, rate), meso: nullable(rates.meso, rate), drop: nullable(rates.drop, rate) } }; }
-    case "rankings": return { entries: leaderboard(v.entries), total: nullable(v.total, integer) };
+    case "rankings": {
+      const entries = leaderboard(v.entries, true).map((row, index) => {
+        const source = object((v.entries as unknown[])[index]);
+        return { ...row, exp: decimal(source.exp), guildName: nullable(source.guildName, (x) => string(x, 45)) };
+      });
+      const total = integer(v.total), page = integer(v.page, 1, 10000), pageSize = integer(v.pageSize, 1, 100);
+      const offset = (page - 1) * pageSize;
+      if (entries.length !== Math.max(0, Math.min(pageSize, total - offset)) || entries.some((row, index) => row.rank !== offset + index + 1)) throw new Error("Inconsistent ranking page");
+      return { entries, total, page, pageSize };
+    }
     case "daily": case "weekly": {
       const entries = leaderboard(v.entries), finalized = boolean(v.finalized), winner = nullable(v.winner, name);
       if (entries.some((row, index) => row.rank !== index + 1 || row.score === null)) throw new Error("Invalid competition positions");
@@ -124,19 +135,21 @@ export function portalRequest(path: string, query: PortalQuery = {}): { kind: Ki
     if (!match || (match[1] === "telemetry" && match[3])) throw new Error("Unsupported portal endpoint");
     kind = match[1] === "telemetry" ? "telemetry" : match[3] ? "characterAchievements" : "character";
   }
-  const allowed: Partial<Record<Kind, string[]>> = { rankings: ["sort", "job", "world", "page", "limit"], daily: ["metric", "date", "limit"], weekly: ["metric", "weekStart", "limit"], telemetry: ["date", "metric", "dimension"], market: ["q", "shopId", "category", "page", "limit"], items: ["q", "category", "page", "limit"], mobs: ["q", "boss", "page", "limit"] };
+  const allowed: Partial<Record<Kind, string[]>> = { rankings: ["sort", "job", "class", "world", "page", "limit"], daily: ["metric", "date", "limit"], weekly: ["metric", "weekStart", "limit"], telemetry: ["date", "metric", "dimension"], market: ["q", "shopId", "category", "page", "limit"], items: ["q", "category", "page", "limit"], mobs: ["q", "boss", "page", "limit"] };
   const parsed = new URLSearchParams();
   for (const [param, raw] of Object.entries(query)) {
     if (raw === undefined) continue;
     if (!allowed[kind]?.includes(param)) throw new Error("Unsupported query parameter");
     const value = String(raw);
     if (["page", "limit", "job", "world", "shopId"].includes(param)) { if (!/^\d{1,7}$/.test(value)) throw new Error("Invalid numeric query"); const n = Number(value); if (param === "limit" && (n < 1 || n > 100) || param === "page" && (n < 1 || n > 10000)) throw new Error("Query out of range"); }
+    else if (param === "class") oneOf(value, ["demon-avenger", "paladin"]);
     else if (["date", "weekStart"].includes(param)) date(value);
     else if (param === "metric" && !metricPattern.test(value) || param === "dimension" && !dimensionPattern.test(value)) throw new Error("Invalid metric");
     else if (param === "sort" && !["level", "fame"].includes(value) || param === "boss" && !["true", "false"].includes(value)) throw new Error("Invalid filter");
     else string(value, param === "q" ? 80 : 96);
     parsed.set(param, value);
   }
+  if (kind === "rankings" && (parsed.has("class") && parsed.has("job") || Number(parsed.get("job") ?? 0) > 99999 || Number(parsed.get("world") ?? 0) > 127)) throw new Error("Invalid ranking filter");
   return { kind, path, query: parsed };
 }
 function unavailable<T>(message = "Live data is not available yet."): PortalEnvelope<T> { return { status: "unavailable", data: null, asOf: null, message, source: "none" }; }
@@ -155,7 +168,13 @@ export async function readPortal<T>(path: string, query: PortalQuery = {}): Prom
     if (base.username || base.password || base.search || base.hash || (base.protocol !== "https:" && !(process.env.NODE_ENV === "development" && base.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname)))) throw new Error("Invalid backend origin");
     // Preserve an optional administrator-configured base prefix. User input never changes the origin.
     const url = new URL(`${base.pathname.replace(/\/$/, "")}${request.path}?${request.query}`, base.origin);
-    const response = await fetch(url, { method: "GET", headers: { Accept: "application/json" }, cache: "no-store", redirect: "error", signal: controller.signal });
+    const headers: Record<string, string> = { Accept: "application/json" };
+    const serviceToken = process.env.TRIXTER_READ_API_TOKEN;
+    if (serviceToken) {
+      if (!/^[A-Za-z0-9_-]{43,128}$/.test(serviceToken)) throw new Error("Invalid service authentication configuration");
+      headers.Authorization = `Bearer ${serviceToken}`;
+    }
+    const response = await fetch(url, { method: "GET", headers, cache: "no-store", redirect: "error", signal: controller.signal });
     if (!response.ok || !response.headers.get("content-type")?.toLowerCase().startsWith("application/json")) throw new Error("Unavailable backend");
     if (Number(response.headers.get("content-length")) > MAX_BODY_BYTES) throw new Error("Oversized response");
     if (!response.body) throw new Error("Missing response");
@@ -166,8 +185,15 @@ export async function readPortal<T>(path: string, query: PortalQuery = {}): Prom
     if (payload.status !== "live") return unavailable<T>();
     const asOf = timestamp(payload.asOf);
     const age = Date.now() - Date.parse(asOf);
-    if (age < -60000 || (request.kind === "status" && age > 120000)) throw new Error("Invalid freshness");
+    if (age < -60000 || (request.kind === "status" && age > 120000) || (request.kind === "rankings" && age > 30000)) throw new Error("Invalid freshness");
     const data = object(validatePortalData(request.kind, payload.data));
+    if (request.kind === "rankings") {
+      if (data.page !== Number(request.query.get("page") ?? 1) || data.pageSize !== Number(request.query.get("limit") ?? 50)) throw new Error("Mismatched ranking pagination");
+      for (const row of data.entries as Obj[]) {
+        if (request.query.has("job") && row.jobId !== Number(request.query.get("job"))) throw new Error("Mismatched ranking job");
+        if (request.query.get("class") === "demon-avenger" && row.jobName !== "Demon Avenger" || request.query.get("class") === "paladin" && row.jobName !== "Paladin") throw new Error("Mismatched ranking class");
+      }
+    }
     if (["character", "characterAchievements", "telemetry"].includes(request.kind)) {
       const requestedName = request.path.split("/")[3];
       if (name(data.name).toLowerCase() !== requestedName.toLowerCase()) throw new Error("Mismatched response subject");

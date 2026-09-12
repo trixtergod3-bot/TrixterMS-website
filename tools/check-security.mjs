@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 
 const skippedDirectories = new Set(['node_modules', '.git', '.next', 'local', 'dist', 'out', 'coverage', '.cache', '.vinext']);
 const blockedExtensions = new Set(['.wz', '.exe', '.dll', '.msi', '.zip', '.rar', '.7z', '.sql', '.sqlite', '.sqlite3', '.db', '.mdb', '.p12', '.pfx', '.pem', '.key']);
-const textExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json', '.md', '.txt', '.css', '.html', '.svg', '.yml', '.yaml', '.toml', '.xml', '.map']);
+const textExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json', '.md', '.txt', '.css', '.html', '.svg', '.yml', '.yaml', '.toml', '.xml', '.map', '.sql']);
 const secretRules = [
   ['private-key-material', /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/],
   ['github-access-token', /\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})\b/],
@@ -17,7 +17,7 @@ const secretRules = [
 const publicPrivateRules = [
   ['private-machine-path', /\b[A-Z]:[\\/]+(?:Users|ChatGPT|CodexWorktrees|BuildTemp|Staging)[\\/]|\/(?:home|Users)\/[A-Za-z0-9_. -]+\//i],
   ['private-network-address', /\b(?:100\.102\.140\.42|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|127\.0\.0\.1)\b/],
-  ['server-only-environment-in-browser', /\bTRIXTER_(?:REGISTRATION_(?:GATEWAY_TOKEN|CSRF_SECRET|PROXY_SECRET|URL)|READ_API_URL|PUBLIC_SERVER_CONFIG)\b/],
+  ['server-only-environment-in-browser', /\bTRIXTER_(?:REGISTRATION_(?:GATEWAY_TOKEN|CSRF_SECRET|PROXY_SECRET|URL)|READ_API_(?:URL|TOKEN)|BRIDGE_[A-Z_]+|PUBLIC_SERVER_CONFIG)\b/],
   ['database-connection-in-browser', /\b(?:MYSQL_PASSWORD|MARIADB_PASSWORD|DATABASE_URL|DB_PASSWORD)\b|\b(?:mysql|mariadb):\/\//i],
   ['development-fixture-in-browser', /DEVELOPMENT_FIXTURE_DATA_ONLY|fixturePublicReadProvider/],
 ];
@@ -65,7 +65,8 @@ export function inspectText(file, content, { browser = false, allowUnavailableLe
 
 export function inspectPublicationPath(file) {
   const relative = normalized(file);
-  if (blockedExtensions.has(path.extname(relative).toLowerCase())) return { file: relative, rule: 'proprietary-or-sensitive-artifact', line: 1 };
+  // Only this reviewed, authored view definition is source. Database dumps remain prohibited.
+  if (blockedExtensions.has(path.extname(relative).toLowerCase()) && relative !== 'bridge/schema.sql') return { file: relative, rule: 'proprietary-or-sensitive-artifact', line: 1 };
   if (/(?:^|\/)\.env(?:\.|$)/.test(relative) && !relative.endsWith('.env.example')) return { file: relative, rule: 'private-environment-file', line: 1 };
   if (/(?:^|\/)(?:database\.ini|id_rsa|id_ed25519|credentials\.json)$/i.test(relative)) return { file: relative, rule: 'private-configuration-file', line: 1 };
   return null;
