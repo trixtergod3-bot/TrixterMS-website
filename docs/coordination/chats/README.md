@@ -2,6 +2,8 @@
 
 | Slug | Exact task title | Publication branch | JSON | Handoff |
 | --- | --- | --- | --- | --- |
+| website-telemetry-rc1-01a097ee | Complete website telemetry RC1 | codex/website-telemetry-rc1-01a097ee | [JSON](website-telemetry-rc1-01a097ee.json) | [MD](website-telemetry-rc1-01a097ee.md) |
+| live-rankings-01a097bc | Add live rankings telemetry bridge | codex/live-rankings-telemetry-01a097bc | [JSON](https://github.com/trixtergod3-bot/TrixterMS-website/blob/codex/live-rankings-telemetry-01a097bc/docs/coordination/chats/live-rankings-01a097bc.json) | [MD](https://github.com/trixtergod3-bot/TrixterMS-website/blob/codex/live-rankings-telemetry-01a097bc/docs/coordination/chats/live-rankings-01a097bc.md) |
 | web-portal-beta-01a096f8 | Build TrixterMS beta portal | codex/website-final-beta-visual-pass | [JSON](https://github.com/trixtergod3-bot/TrixterMS-website/blob/codex/website-final-beta-visual-pass/docs/coordination/chats/web-portal-beta-01a096f8.json) | [MD](https://github.com/trixtergod3-bot/TrixterMS-website/blob/codex/website-final-beta-visual-pass/docs/coordination/chats/web-portal-beta-01a096f8.md) |
 | push-website-to-git-01a09709 | Push TrixterMS website to Git | main | [JSON](push-website-to-git-01a09709.json) | [MD](push-website-to-git-01a09709.md) |
 
