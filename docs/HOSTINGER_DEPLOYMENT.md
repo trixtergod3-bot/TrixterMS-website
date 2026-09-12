@@ -1,6 +1,6 @@
 # Hostinger deployment preparation
 
-Prepared 2026-09-12 for `trixtergod3-bot/TrixterMS-website`, branch `codex/web-portal-beta-v1`, future canonical origin `https://trixterms.com`. This is a deployment plan; this task does not deploy, change DNS or replace the existing hosted website.
+Prepared 2026-09-12 for `trixtergod3-bot/TrixterMS-website`, branch **`main`**, future canonical origin `https://trixterms.com`. GitHub source publication is verified; this remains a deployment plan and does not establish any hosting connection, DNS change or replacement of the existing website. See [the publication checkpoint](GITHUB_PUBLISH_HOSTINGER_READINESS.md).
 
 ## Hosting route
 
@@ -15,11 +15,11 @@ The following are this repository's intended deployment settings, to compare wit
 | Setting | Required value |
 |---|---|
 | Repository | `trixtergod3-bot/TrixterMS-website` |
-| Branch | `codex/web-portal-beta-v1`; never silently select `main` |
+| Branch | `main` |
 | Project root | Repository root (`.`), containing `package.json` |
 | Framework | Next.js with a Node server |
-| Runtime | Node 22, at least 22.13.0; select the tested version supported by the plan |
-| Install | `npm ci` using the committed lockfile |
+| Runtime | Node 24.x; locally tested with Node 24.19.0 and npm 11.17.0. Hostinger manages the selectable patch version. |
+| Install | `npm ci --include=dev` using the committed lockfile; build dependencies must be available even when production mode is configured |
 | Build | `npm run build` |
 | Start | `npm start` |
 | Build output | `.next`; use the managed Next.js adapter rather than a static export |
@@ -60,7 +60,7 @@ Downloads require an approved release manifest, checksum and configured URL. Vot
 
 ## Future deployment sequence
 
-1. Verify the source checkpoint on `codex/web-portal-beta-v1` and the remote SHA in GitHub. Grant the Hostinger GitHub integration access to this private repository through the owner's account, without committing access tokens.
+1. Verify the source checkpoint on `main` and the remote SHA in GitHub. After separate owner authorization to connect hosting, grant the Hostinger GitHub integration access to this private repository through the owner's account, without committing access tokens. Import the existing repository and select `main`; later pushes to that connected branch trigger automatic redeployment. [Official GitHub auto-deployment guide](https://www.hostinger.com/support/how-to-deploy-apps-built-with-codex-on-hostinger/).
 2. Confirm managed Node plan support, select the repository/branch and configure a separate preview application. Compare detected settings with the build contract above before starting any deployment.
 3. Configure only the documented production environment values and approved public service endpoints. Keep secrets in the hosting environment manager and redact them from deployment evidence.
 4. Run the production build and smoke tests for every primary route, 404 handling, feature-disabled states and API availability envelopes. Check mobile navigation, keyboard access and no horizontal overflow. Inspect browser bundles for credentials and accidental DEV configuration paths.

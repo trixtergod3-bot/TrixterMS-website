@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a09709-0822-7a52-ba02-392b94bbbc45",
+  "chatSlug": "push-website-to-git-01a09709",
+  "chatTitle": "Push TrixterMS website to Git",
+  "task": "Publish current TrixterMS Website V2 to dedicated GitHub main and document exact Hostinger readiness without connecting live hosting or modifying the game-server repository",
+  "status": "DONE",
+  "localWorktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/web-portal-beta-v1",
+  "branch": "main",
+  "localHead": "4ad8f97b14a4666a1469df8fb650d2e9565c143c",
+  "publicationBranch": "main",
+  "latestCommit": "4ad8f97b14a4666a1469df8fb650d2e9565c143c",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": true,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "README.md",
+    "docs/SOURCE_MIGRATION.md",
+    "docs/BETA_PORTAL_REPORT.md",
+    "docs/HOSTINGER_DEPLOYMENT.md",
+    "docs/GITHUB_PUBLISH_HOSTINGER_READINESS.md",
+    "docs/coordination/chats/README.md",
+    "docs/coordination/chats/push-website-to-git-01a09709.json",
+    "docs/coordination/chats/push-website-to-git-01a09709.md"
+  ],
+  "dependencies": [
+    "Reviewed website source 02061cfaef93b3f55c1c8053c1fc7b2a0a83b9c7 and frozen handoff 4ad8f97b14a4666a1469df8fb650d2e9565c143c supplied by Build TrixterMS beta portal"
+  ],
+  "collisionRisks": [
+    "Website source ownership was frozen before main promotion; future deployments should use main",
+    "Game-server checkout contains unrelated work and was not published or edited by this checkpoint"
+  ],
+  "remainingWork": [],
+  "ownerQa": [],
+  "sourceCoverage": "Complete reviewed Website V2 adaptation published to website repository main; follow-up changes only publication/hosting documentation. No game-server repository commit or push.",
+  "evidence": [
+    "Git 2.55.0.windows.2 and matching HTTPS helper located; repeated TLS-verified GitHub HTTPS checks and pushes succeeded without reproduced crash",
+    "Main created at exact frozen 4ad8f97b14a4666a1469df8fb650d2e9565c143c and independently verified via ls-remote",
+    "GitHub repository default branch changed to main and read back; repository remains private",
+    "Production build rerun successfully on main with Node 24.19.0/npm 11.17.0",
+    "Source owner typecheck/lint/45 tests passed; 120 route-width checks,26 internal links,10 interactions,0 browser errors independently read from report",
+    "Source and53 generated browser bundles security scan passed with zero findings; publication inventory excludes secrets/private env/client/WZ/database/build/cache files",
+    "Lockfile v3 matches manifest,136 entries use public npm registry; placeholder env example only",
+    "Verified complete Git bundle backup before main promotion; SHA256 A4EF88B143749138B7B647BE333E5FF80173B3FE3DAB802CFEDADCA988E897C6",
+    "Hostinger official Node/Next.js/GitHub auto-deployment documentation checked; Node24,repo root,npm ci --include=dev,npm run build,npm start,.next settings documented",
+    "No live Hostinger connection,domain change,game runtime action or gameplay QA performed"
+  ],
+  "lastUpdated": "2026-09-12T19:28:56.5126268Z",
+  "lane": "website-github-publication",
+  "objective": "Publish current TrixterMS Website V2 to dedicated GitHub main and document exact Hostinger readiness without connecting live hosting or modifying the game-server repository",
+  "worktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/web-portal-beta-v1",
+  "state": "done",
+  "currentAction": "Complete main publication and Hostinger readiness checkpoint; final handoff revision is available from Git history",
+  "lastCompleted": "Source promoted to main,default branch verified,production build and security scan passed",
+  "blocker": "",
+  "filesChanged": [
+    "README.md",
+    "docs/SOURCE_MIGRATION.md",
+    "docs/BETA_PORTAL_REPORT.md",
+    "docs/HOSTINGER_DEPLOYMENT.md",
+    "docs/GITHUB_PUBLISH_HOSTINGER_READINESS.md",
+    "docs/coordination/chats/README.md",
+    "docs/coordination/chats/push-website-to-git-01a09709.json",
+    "docs/coordination/chats/push-website-to-git-01a09709.md"
+  ],
+  "qaClient": "Headless Chrome website QA; independent mobile screenshot review",
+  "qaLauncher": "node tools/verify-browser.mjs",
+  "qaPort": "4315",
+  "runtime": "Local Next.js production preview only; no game runtime operations",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "Separate authorization is required before connecting or modifying Hostinger hosting",
+  "nextAction": "After owner authorization,import main into a Hostinger Node preview and verify private-repository access,environment settings and preservation of the existing /beta service",
+  "publicationRepository": "trixtergod3-bot/TrixterMS-website",
+  "sourceCheckpoint": "02061cfaef93b3f55c1c8053c1fc7b2a0a83b9c7",
+  "deploymentPrerequisites": [
+    "Hostinger account/eligible plan/private GitHub authorization not observed",
+    "Live read/registration services and release metadata remain unconfigured",
+    "Visual owner acceptance and /beta-preserving domain cutover are separate release gates"
+  ]
+}

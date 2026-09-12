@@ -12,7 +12,7 @@ Website V2 has the most complete portal, typed data providers and local public-r
 
 `C:\Users\Studio PC\Documents\ChatGPT\TrixterMS\local\web-portal-beta-v1`
 
-Target repository: `trixtergod3-bot/TrixterMS-website`. Target branch: `codex/web-portal-beta-v1`. The migration is a reviewed website-source copy, not a merge of the game repository's history. No direct push to `main` is part of the task.
+Target repository: `trixtergod3-bot/TrixterMS-website`. Deployment branch: **`main`**. The migration is a reviewed website-source copy, not a merge of the game repository's history. The original migration checkpoint remains on `codex/web-portal-beta-v1`; the subsequent owner-authorized publication promoted its verified snapshot to `main`. See [publication readiness](GITHUB_PUBLISH_HOSTINGER_READINESS.md).
 
 ## Existing candidates
 

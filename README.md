@@ -59,4 +59,6 @@ Home, download, register, rankings, daily and weekly rankings, achievements, dat
 - [Hostinger deployment preparation](docs/HOSTINGER_DEPLOYMENT.md)
 - [Verification and release readiness](docs/VERIFICATION.md)
 
-Target: `trixtergod3-bot/TrixterMS-website`, branch `codex/web-portal-beta-v1`. No main push or hosting deployment is part of this checkpoint. Keep the independently managed `/beta` patch feed and payloads intact before any future domain cutover.
+Published repository: `trixtergod3-bot/TrixterMS-website`, branch **`main`**. Use the repository root (`.`), the Next.js Node server preset, and Node 24.x in Hostinger. Install with `npm ci --include=dev`, build with `npm run build`, and start with `npm start`; output is `.next`.
+
+See [the GitHub publication and Hostinger checklist](docs/GITHUB_PUBLISH_HOSTINGER_READINESS.md) for the verified source revision, environment variable names and remaining connection steps. Hosting connection and deployment have not been performed. Keep the independently managed `/beta` patch feed and payloads intact before any future domain cutover.
