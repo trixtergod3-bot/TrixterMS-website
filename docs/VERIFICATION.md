@@ -4,6 +4,7 @@ Observed on 2026-09-12 against the production build in the isolated website chec
 
 | Check | Observed result |
 | --- | --- |
+| `npm install --cache ./local/npm-cache --no-audit --no-fund` | PASS: exit 0. Playwright was subsequently added with `npm install --save-dev --save-exact @playwright/test --cache ./local/npm-cache --no-audit --no-fund`, also exit 0. Lockfile is committed. |
 | `npm run build` | PASS: Next.js 16.3.3 production build using webpack. |
 | `npm run typecheck` | PASS. |
 | `npm run lint` | PASS. |
@@ -13,6 +14,8 @@ Observed on 2026-09-12 against the production build in the isolated website chec
 | Original source preservation | The V2, UX remaster, foundation and independent D-drive source candidates remained clean and unchanged. |
 
 The browser run covered 24 routes at widths 1440, 1024, 768, 390 and 320 pixels. Every checked route returned 200 with one main heading, no horizontal overflow and no broken images. Internal links and anchors resolved. Interaction coverage includes responsive navigation, ranking tabs, achievement search and empty results, invalid database/FM queries, historical ranking parameters, disconnected API responses, disabled registration, and a real 404 route. Legacy `/daily-rankings` and `/community` redirects and the `nosniff`/frame-denial headers were also independently checked.
+
+The source/bundle secret and publication-boundary scan passed. The install commands above skipped npm vulnerability auditing; no dependency vulnerability-audit result is claimed.
 
 All 11 public GET routes returned an honest unavailable envelope (`503`, `data: null`) with no backend configured. Disabled account submission also returned `503`. Automated tests use synthetic fixtures only; the production application does not import player fixtures. No registration request was sent to a game service and no account was created.
 
