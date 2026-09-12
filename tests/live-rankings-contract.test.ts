@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { portalRequest, readPortal, validatePortalData } from '../lib/portal/data.ts';
+import { portalRequest, validatePortalData } from '../lib/portal/data.ts';
+import { createPublicReader } from '../lib/portal/public-data.ts';
 import { inspectText, inspectPublicationPath } from '../tools/check-security.mjs';
 
 const row = { rank: 1, name: 'NewLevelOne', level: 1, exp: '0', jobId: 0, jobName: 'Beginner', fame: 0, guildName: null, score: null };
@@ -28,22 +29,23 @@ void test('authenticated reader bounds freshness and rejects wrong pages and cla
   const previous = keys.map(key => process.env[key]);
   t.after(() => { globalThis.fetch = originalFetch; keys.forEach((key, i) => { if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i]; }); });
   process.env.TRIXTER_READ_API_URL = 'https://reviewed-backend.invalid';
-  process.env.TRIXTER_READ_API_TOKEN = 'test_'.repeat(10);
+  process.env.TRIXTER_READ_API_TOKEN = 'synthetic-only-token_abcdefghijklmnopqrstuvwxyz0123456789';
   let payload = { status: 'live', asOf: new Date().toISOString(), data };
   globalThis.fetch = async (_input, options) => {
     assert.deepEqual(options?.headers, { Accept: 'application/json', Authorization: `Bearer ${process.env.TRIXTER_READ_API_TOKEN}` });
     return Response.json(payload);
   };
-  const success = await readPortal('/api/rankings');
+  const get = (query = {}) => createPublicReader().read('/api/rankings', query);
+  const success = await get();
   assert.equal(success.status, 'live');
   assert.equal(JSON.stringify(success).includes(process.env.TRIXTER_READ_API_TOKEN), false);
-  assert.equal((await readPortal('/api/rankings', { page: 2 })).status, 'unavailable');
-  assert.equal((await readPortal('/api/rankings', { limit: 25 })).status, 'unavailable');
-  assert.equal((await readPortal('/api/rankings', { class: 'demon-avenger' })).status, 'unavailable');
+  assert.equal((await get({ page: 2 })).status, 'unavailable');
+  assert.equal((await get({ limit: 25 })).status, 'unavailable');
+  assert.equal((await get({ class: 'demon-avenger' })).status, 'unavailable');
   payload = { ...payload, asOf: new Date(Date.now() - 31000).toISOString() };
-  assert.equal((await readPortal('/api/rankings')).status, 'unavailable');
+  assert.equal((await get()).status, 'stale');
   process.env.TRIXTER_READ_API_TOKEN = 'bad\nheader';
-  assert.equal((await readPortal('/api/rankings')).status, 'unavailable');
+  assert.equal((await get()).status, 'unavailable');
 });
 
 void test('publication permits only reviewed view source and browser excludes bridge secrets', () => {

@@ -16,7 +16,7 @@ try {
   let beginnerLevel = 1;
   let releaseRequest;
   let holdRequest = true;
-  await page.route('**/api/rankings?**', async (route) => {
+  await page.route('**/api/public/rankings?**', async (route) => {
     const url = new URL(route.request().url());
     const currentPage = Number(url.searchParams.get('page') ?? 1);
     const pageSize = Number(url.searchParams.get('limit') ?? 50);
@@ -38,7 +38,8 @@ try {
         score: null,
       };
     });
-    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'live', source: 'backend', message: '', asOf: new Date().toISOString(), data: { entries, total, page: currentPage, pageSize } }) });
+    const asOf = await page.evaluate(() => new Date().toISOString());
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: mode === 'stale' ? 'stale' : 'live', source: 'backend', message: '', asOf, data: { entries, total, page: currentPage, pageSize } }) });
   });
 
   await page.goto(base + '/rankings', { waitUntil: 'domcontentloaded' });
@@ -63,7 +64,7 @@ try {
   mode = 'outage';
   await page.clock.fastForward(21_000);
   await expect.poll(() => report.requests.length).toBeGreaterThan(callsBefore);
-  await expect(page.getByRole('status')).toContainText('Refresh unavailable · showing the last update');
+  await expect(page.getByRole('status')).toContainText('Stale data · refresh unavailable · showing the last update');
   assert.equal(await firstRow.evaluate((element) => element.isConnected), true);
   await expect(page.locator('table tbody tr')).toHaveCount(50);
   report.checks.push('Automatic 20-second poll, outage indication, last successful rows retained without replacement/flicker');
@@ -78,12 +79,26 @@ try {
 
   mode = 'malformed';
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Refresh unavailable');
+  await expect(page.getByRole('status')).toContainText('refresh unavailable');
   await expect(page.locator('table tbody tr')).toHaveCount(50);
   mode = 'live';
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Live public data');
   report.checks.push('Malformed response is handled as an outage');
+
+  mode = 'stale';
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Stale data · showing the last update');
+  await expect(page.locator('table tbody tr')).toHaveCount(50);
+  mode = 'outage';
+  await page.clock.fastForward(121_000);
+  await expect(page.locator('table tbody tr')).toHaveCount(0);
+  await expect(page.getByRole('status')).not.toContainText('Live public data');
+  report.checks.push('Explicit API stale response is labeled; retained rows expire after two minutes');
+  mode = 'live';
+  await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Live public data');
 
   await mkdir('local/qa/live-rankings', { recursive: true });
   await page.screenshot({ path: 'local/qa/live-rankings/desktop.png', fullPage: false });

@@ -19,6 +19,7 @@ const publicPrivateRules = [
   ['private-network-address', /\b(?:100\.102\.140\.42|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|127\.0\.0\.1)\b/],
   ['server-only-environment-in-browser', /\bTRIXTER_(?:REGISTRATION_(?:GATEWAY_TOKEN|CSRF_SECRET|PROXY_SECRET|URL)|READ_API_(?:URL|TOKEN)|BRIDGE_[A-Z_]+|PUBLIC_SERVER_CONFIG)\b/],
   ['database-connection-in-browser', /\b(?:MYSQL_PASSWORD|MARIADB_PASSWORD|DATABASE_URL|DB_PASSWORD)\b|\b(?:mysql|mariadb):\/\//i],
+  ['private-ranking-fields-in-browser', /\b(?:internalId|character_?id|account_?id|isDemonAvenger|macAddress|hardwareId|passwordHash)\b|TRIXTER_DA_WARRIOR_CARRIER_V1|999132900/i],
   ['development-fixture-in-browser', /DEVELOPMENT_FIXTURE_DATA_ONLY|fixturePublicReadProvider/],
 ];
 function normalized(file) { return file.replaceAll('\\', '/'); }
@@ -48,7 +49,7 @@ export function inspectText(file, content, { browser = false, allowUnavailableLe
       if (fixtureImport && !unavailableCompatibilityImport) issues.push(issue(relative, 'legacy-fixture-provider-reachable', content, fixtureImport));
     }
     if (/^[\s;]*["']use client["']/.test(content)) {
-      const serverImport = /(?:from\s*|import\s*\()["'][^"']*portal\/(?:registration|integrations|data)(?:\.[cm]?[jt]sx?)?["']/.exec(content);
+      const serverImport = /(?:from\s*|import\s*\()["'][^"']*portal\/(?:registration|integrations|data|public[^"']*)(?:\.[cm]?[jt]sx?)?["']/.exec(content);
       if (serverImport) issues.push(issue(relative, 'server-module-imported-by-client', content, serverImport));
     }
   }

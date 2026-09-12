@@ -1,5 +1,5 @@
 /** Public DTOs. Database identifiers, account fields, and credentials never belong here. */
-export type PortalState = "live" | "unavailable" | "disabled" | "fixture";
+export type PortalState = "live" | "stale" | "unavailable" | "disabled" | "fixture";
 export interface PortalEnvelope<T> {
   status: PortalState;
   data: T | null;
@@ -26,6 +26,29 @@ export interface LeaderboardEntry {
   guildName?: string | null;
 }
 export interface RankingsData { entries: LeaderboardEntry[]; total: number | null; page?: number; pageSize?: number }
+/** RC1 standing collections always include complete, bounded pagination metadata. */
+export interface PublicRankingsData {
+  entries: (LeaderboardEntry & { exp: string; guildName: string | null; score: null })[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+export interface PublicStatsData {
+  totalCharacters: number;
+  classDistribution: { jobName: string; count: number }[];
+  rankingSnapshotAt: string;
+}
+export interface PublicTelemetryData extends PublicStatsData {
+  online: boolean | null;
+  playersOnline: number | null;
+  channels: { channel: number; status: "online" | "offline" | "unknown"; playersOnline: number | null }[];
+  uptimeSeconds: number | null;
+  rates: { exp: number | null; meso: number | null; drop: number | null };
+  runtimeAsOf: string | null;
+  runtimeStatus: "live" | "unavailable";
+  /** No reviewed aggregate activity source is activated in RC1. */
+  recentActivity: null;
+}
 export interface TournamentData extends RankingsData {
   metric: string;
   date: string | null;

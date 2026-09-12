@@ -1,5 +1,7 @@
 # Live character rankings and public telemetry bridge
 
+**RC1 update:** [Rankings and Telemetry RC1](WEBSITE_TELEMETRY_RC1.md) supersedes this checkpoint's earlier cache, API and activation details. Use its endpoint table and the current [bridge runbook](../bridge/README.md); this document preserves the original implementation provenance.
+
 This implementation extends the current Website V2 Next.js portal without changing its art, layout system, game runtime or gameplay. The implementation checkout is `local/web-portal-beta-v1` inside the authoritative Documents TrixterMS workspace. Publication repository: `trixtergod3-bot/TrixterMS-website`; lane branch: `codex/live-rankings-telemetry-01a097bc`. The preserved starting revision is `0b291cbd878a026e77210b8a044c96cfd2e7c044` on `codex/website-final-beta-visual-pass`. Main was observed at `81856c608dab33346f8f915dcd5219c893f09e01` and is not changed by this lane.
 
 ## Architecture

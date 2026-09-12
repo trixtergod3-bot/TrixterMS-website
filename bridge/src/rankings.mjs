@@ -68,11 +68,18 @@ export function createSnapshot(rows, asOf, { maxRows, maxBytes }) {
   });
   const level = Object.freeze(projected.sort(compareProgress));
   const fame = Object.freeze([...level].sort((a, b) => b.fame - a.fame || compareProgress(a, b)));
-  return Object.freeze({ asOf, level, fame });
+  const counts = new Map();
+  for (const row of level) counts.set(row.jobName, (counts.get(row.jobName) ?? 0) + 1);
+  const classDistribution = Object.freeze([...counts.entries()]
+    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+    .map(([jobName, count]) => Object.freeze({ jobName, count })));
+  return Object.freeze({ status: 'live', asOf, level, fame,
+    stats: Object.freeze({ totalCharacters: level.length, classDistribution, rankingSnapshotAt: asOf }) });
 }
 
-export function parseRankingQuery(params) {
+export function parseRankingQuery(params, { allowName = false } = {}) {
   const permitted = new Set(['page', 'limit', 'world', 'job', 'class', 'sort']);
+  if (allowName) permitted.add('name');
   for (const key of params.keys()) {
     if (!permitted.has(key) || params.getAll(key).length !== 1) throw new QueryError();
   }
@@ -86,6 +93,10 @@ export function parseRankingQuery(params) {
   };
   const sort = params.get('sort') ?? 'level';
   const className = params.get('class');
+  const name = params.get('name');
+  if (name !== null) {
+    try { publicText(name, 13); } catch { throw new QueryError(); }
+  }
   if (!['level', 'fame'].includes(sort) ||
       (className !== null && !['demon-avenger', 'paladin'].includes(className)) ||
       (className !== null && params.has('job'))) throw new QueryError();
@@ -94,12 +105,13 @@ export function parseRankingQuery(params) {
     pageSize: integer('limit', 50, 1, 100),
     world: integer('world', null, 0, 127),
     job: integer('job', null, 0, 99_999),
-    className, sort,
+    className, sort, name,
   });
 }
 
 export function pageSnapshot(snapshot, query) {
   const filtered = snapshot[query.sort].filter((row) =>
+    (query.name === null || row.name === query.name) &&
     (query.world === null || row.world === query.world) &&
     (query.job === null || row.jobId === query.job) &&
     (query.className !== 'demon-avenger' || row.isDemonAvenger) &&
@@ -116,18 +128,27 @@ export function pageSnapshot(snapshot, query) {
     guildName: row.guildName,
     score: null,
   }));
-  return { status: 'live', asOf: snapshot.asOf,
+  return { status: snapshot.status, asOf: snapshot.asOf,
     data: { entries, total: filtered.length, page: query.page, pageSize: query.pageSize } };
 }
 
 export function createSnapshotCache({ source, now = Date.now, refreshMs = 10_000,
-  maxRows = 50_000, maxBytes = 16 * 1024 * 1024, onFailure = () => {} }) {
+  maxRows = 50_000, maxBytes = 16 * 1024 * 1024, staleMs = 120_000, onFailure = () => {} }) {
+  if (!Number.isSafeInteger(refreshMs) || refreshMs < 1000 || refreshMs > 60_000 ||
+      !Number.isSafeInteger(staleMs) || staleMs < refreshMs || staleMs > 120_000) throw new Error('Invalid snapshot cache bounds');
   let snapshot = null, expiresAt = 0, nextAttemptAt = 0, failures = 0, inFlight = null;
+  const stale = () => {
+    if (snapshot && now() - Date.parse(snapshot.asOf) < staleMs) {
+      return Object.freeze({ ...snapshot, status: 'stale' });
+    }
+    snapshot = null;
+    throw new UnavailableError();
+  };
   const refresh = async () => {
     const time = now();
     if (snapshot && time < expiresAt) return snapshot;
     if (inFlight) return inFlight;
-    if (time < nextAttemptAt) throw new UnavailableError();
+    if (time < nextAttemptAt) return stale();
     inFlight = Promise.resolve().then(async () => {
       try {
         // Timestamp at query start is conservative about data freshness.
@@ -141,12 +162,11 @@ export function createSnapshotCache({ source, now = Date.now, refreshMs = 10_000
         nextAttemptAt = 0;
         return snapshot;
       } catch {
-        snapshot = null; // An outage must never be labelled live using old data.
         expiresAt = 0;
         failures = Math.min(failures + 1, 4);
         nextAttemptAt = now() + Math.min(refreshMs * 2 ** (failures - 1), 60_000);
-        onFailure(); // Caller logs a fixed message only, never driver errors or rows.
-        throw new UnavailableError();
+        try { onFailure(); } catch { /* Logging cannot bypass safe source failure handling. */ }
+        return stale(); // Preserve known data only with explicit stale status and a hard age bound.
       }
     }).finally(() => { inFlight = null; });
     return inFlight;

@@ -34,7 +34,10 @@ export async function createDatabaseSource(config, driverOverride) {
       if (!Number.isSafeInteger(limit) || limit < 2 || limit > 100_001) throw new Error('Invalid snapshot capacity');
       return pool.query({ sql: SNAPSHOT_SQL, timeout: 2000 }, [limit]);
     },
-    explain: () => pool.query({ sql: `EXPLAIN ${SNAPSHOT_SQL}`, timeout: 2000 }, [100_001]),
+    explain: (limit = 100_001) => {
+      if (!Number.isSafeInteger(limit) || limit < 2 || limit > 100_001) throw new Error('Invalid snapshot capacity');
+      return pool.query({ sql: `EXPLAIN ${SNAPSHOT_SQL}`, timeout: 2000 }, [limit]);
+    },
     verifyBoundary: () => verifyReaderBoundary(pool, config.database),
     close: () => pool.end(),
   });

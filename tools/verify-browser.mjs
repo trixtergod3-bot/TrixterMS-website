@@ -30,7 +30,7 @@ function isExpectedMissingResourceConsole(text,location,expected404Url){
 function isExpectedRankingUnavailableConsole(text,location,pageUrl){
  try{
   const page=new URL(pageUrl),resource=new URL(location.url);
-  return page.pathname==='/rankings'&&resource.origin===page.origin&&resource.pathname==='/api/rankings'
+  return page.pathname==='/rankings'&&resource.origin===page.origin&&['/api/rankings','/api/public/rankings'].includes(resource.pathname)
    &&location.lineNumber===0&&location.columnNumber===0
    &&/^Failed to load resource: the server responded with a status of 503 \((?:Service Unavailable)?\)$/.test(text);
  }catch{return false;}

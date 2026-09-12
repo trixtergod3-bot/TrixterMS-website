@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { portalRequest, readCharacterAchievementsVerified, readPortal, validatePortalData } from "../lib/portal/data.ts";
+import { createPublicReader } from "../lib/portal/public-data.ts";
 
 const status = { online: true, playersOnline: 12, version: "111.1", rates: { exp: null, meso: null, drop: null } };
 const row = { rank: 1, name: "Example", level: 30, jobId: 100, jobName: "Warrior", fame: 0, score: "9223372036854775807" };
@@ -130,31 +131,35 @@ void test("missing backend and disabled competitions never produce fake players"
   assert.equal((await readPortal("/api/rankings/weekly")).status, "disabled");
 });
 
-void test("transport has bounded requests, no credentials, and sanitized failures", async (t) => {
+void test("status alias uses authenticated bounded telemetry transport and sanitized failures", async (t) => {
   const oldUrl = process.env.TRIXTER_READ_API_URL;
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; if (oldUrl === undefined) delete process.env.TRIXTER_READ_API_URL; else process.env.TRIXTER_READ_API_URL = oldUrl; });
   process.env.TRIXTER_READ_API_URL = "https://reviewed-backend.invalid/readonly";
+  const token = "synthetic-only-token_abcdefghijklmnopqrstuvwxyz0123456789";
+  const clock = Date.now(), asOf = new Date(clock).toISOString();
+  const telemetry = { online: status.online, playersOnline: status.playersOnline, rates: status.rates, totalCharacters: 1, classDistribution: [{ jobName: "Beginner", count: 1 }], rankingSnapshotAt: asOf, channels: [], uptimeSeconds: null, runtimeAsOf: asOf, runtimeStatus: "live", recentActivity: null };
+  const get = () => createPublicReader({ now: () => clock, config: () => ({ url: process.env.TRIXTER_READ_API_URL, token }) }).read("/api/status");
   let calls = 0;
   globalThis.fetch = async (input, options) => {
     calls++;
-    assert.equal(input instanceof URL ? input.href : typeof input === "string" ? input : input.url, "https://reviewed-backend.invalid/readonly/api/status?");
-    assert.deepEqual(options?.headers, { Accept: "application/json" });
+    assert.equal(input instanceof URL ? input.href : typeof input === "string" ? input : input.url, "https://reviewed-backend.invalid/readonly/api/public/telemetry?");
+    assert.deepEqual(options?.headers, { Accept: "application/json", Authorization: `Bearer ${token}` });
     assert.equal(options?.redirect, "error");
     assert.equal(options?.cache, "no-store");
     assert.ok(options?.signal);
-    return Response.json({ status: "live", asOf: new Date().toISOString(), data: { ...status, password: "private" } });
+    return Response.json({ status: "live", asOf, data: { ...telemetry, password: "private" } });
   };
-  assert.deepEqual((await readPortal("/api/status")).data, status);
+  assert.deepEqual((await get()).data, { ...status, version: null });
   assert.equal(calls, 1);
   globalThis.fetch = async () => { throw new Error("Sensitive upstream details"); };
-  const failure = await readPortal("/api/status");
+  const failure = await get();
   assert.equal(failure.status, "unavailable");
   assert.equal(JSON.stringify(failure).includes("Sensitive"), false);
   globalThis.fetch = async () => Response.json({ status: "live", asOf: "2000-01-01T00:00:00Z", data: status });
-  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  assert.equal((await get()).status, "unavailable");
   globalThis.fetch = async () => new Response("x".repeat(1024 * 1024 + 1), { headers: { "content-type": "application/json" } });
-  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  assert.equal((await get()).status, "unavailable");
   process.env.TRIXTER_READ_API_URL = "https://user:password@reviewed-backend.invalid";
-  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  assert.equal((await get()).status, "unavailable");
 });

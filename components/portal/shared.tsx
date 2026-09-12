@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Compass, Radio } from 'lucide-react';
 import type { PortalEnvelope } from '@/lib/portal/contracts';
 export function DataNote({response}: {response:PortalEnvelope<unknown>}) {
- return <output className={'data-note data-note-'+response.status}><Radio size={14} aria-hidden="true"/><span>{response.status==='live'?'Live public data':response.status==='fixture'?'Local development fixture · not live':response.status==='disabled'?'Coming in a future update':'Data unavailable'}{response.asOf&&<> · <time dateTime={response.asOf}>{new Date(response.asOf).toLocaleString('en-GB',{timeZone:'UTC'})} UTC</time></>}</span></output>;
+ return <output className={'data-note data-note-'+response.status}><Radio size={14} aria-hidden="true"/><span>{response.status==='live'?'Live public data':response.status==='stale'?'Stale data · showing the last update':response.status==='fixture'?'Local development fixture · not live':response.status==='disabled'?'Coming in a future update':'Data unavailable'}{response.asOf&&<> · <time dateTime={response.asOf}>{new Date(response.asOf).toLocaleString('en-GB',{timeZone:'UTC'})} UTC</time></>}</span></output>;
 }
 export function EmptyState({title='The next chapter is on its way.',children}:{title?:string;children:React.ReactNode}) {
  return <div className="portal-empty"><div className="empty-emblem"><Compass size={32} strokeWidth={1}/></div><h3>{title}</h3><p>{children}</p></div>;

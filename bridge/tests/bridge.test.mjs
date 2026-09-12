@@ -135,21 +135,23 @@ test('one in-flight refresh serves concurrent clients; changes and deletions ref
   assert.equal(result.level[0].level, 12);
 });
 
-test('outage drops stale snapshot, applies exponential backoff, then recovers', async () => {
+test('outage explicitly labels cached snapshot stale, applies exponential backoff, then recovers', async () => {
   let clock = Date.parse(timestamp), reads = 0, fail = false;
   const cache = createSnapshotCache({ now: () => clock, ...options,
     source: { readSnapshot: async () => { reads++; if (fail) throw new Error('FAKE_SECRET'); return [row(1)]; } } });
   await cache.get();
   clock += 10_000; fail = true;
-  await assert.rejects(cache.get(), UnavailableError);
-  await assert.rejects(cache.get(), UnavailableError);
+  assert.equal((await cache.get()).status, 'stale');
+  assert.equal((await cache.get()).status, 'stale');
   assert.equal(reads, 2);
   assert.equal(cache.retryAfterSeconds(), 10);
   clock += 10_000;
-  await assert.rejects(cache.get(), UnavailableError);
+  assert.equal((await cache.get()).status, 'stale');
   assert.equal(cache.retryAfterSeconds(), 20);
   clock += 20_000; fail = false;
-  assert.equal((await cache.get()).level.length, 1);
+  const restored = await cache.get();
+  assert.equal(restored.level.length, 1);
+  assert.equal(restored.status, 'live');
 });
 
 test('synchronous driver failure releases single-flight so retry can recover', async () => {

@@ -1,4 +1,5 @@
 import { validToken } from './http.mjs';
+import { isAbsolute } from 'node:path';
 
 export function readConfig(env = process.env) {
   const integer = (key, fallback, min, max) => {
@@ -21,12 +22,19 @@ export function readConfig(env = process.env) {
   if (!password || password.length < 24) throw new Error('A dedicated database reader password is required');
   const database = env.TRIXTER_BRIDGE_DB_NAME;
   if (!database || !/^[A-Za-z][A-Za-z0-9_]{0,63}$/u.test(database)) throw new Error('A database schema is required');
+  const runtimeFile = env.TRIXTER_BRIDGE_RUNTIME_FILE || null;
+  if (runtimeFile !== null && (!isAbsolute(runtimeFile) || runtimeFile.length > 1024 ||
+      Array.from(runtimeFile).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) ||
+      /^(?:\\\\|\/\/)/u.test(runtimeFile))) {
+    throw new Error('Runtime aggregate must use an absolute local file path');
+  }
   return Object.freeze({
     host, port: integer('TRIXTER_BRIDGE_PORT', 4316, 1024, 65535),
     token: env.TRIXTER_BRIDGE_TOKEN,
     maxRows: integer('TRIXTER_BRIDGE_MAX_ROWS', 50_000, 1, 100_000),
     maxBytes: 16 * 1024 * 1024,
     refreshMs: 10_000,
+    runtimeFile,
     database: Object.freeze({ host: dbHost, port: integer('TRIXTER_BRIDGE_DB_PORT', 3306, 1024, 65535),
       user, password, database }),
   });

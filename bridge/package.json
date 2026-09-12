@@ -5,7 +5,7 @@
   "type": "module",
   "engines": { "node": ">=22.13.0 <25" },
   "scripts": {
-    "start": "node --env-file=local/bridge.env src/main.mjs",
+    "start": "node --env-file=local/bridge.env src/supervisor.mjs",
     "test": "node --test tests/*.test.mjs",
     "validate:database": "node --env-file=local/bridge.env src/validate-database.mjs"
   },

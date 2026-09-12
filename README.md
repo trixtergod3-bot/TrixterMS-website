@@ -4,6 +4,8 @@ Next.js 16.3.3, React 19.2.8, TypeScript and responsive CSS. This dedicated webs
 
 Latest owner candidate: [final beta visual pass](docs/FINAL_BETA_VISUAL_PASS.md). Public brand spelling is exactly **TRIXTERMS**; technical repository identifiers, paths and configuration names retain their existing spelling.
 
+Rankings and Telemetry RC1 preserves that design and adds four production public data contracts, a restricted bridge and explicit stale/unavailable behavior. See the [RC1 contract and activation guide](docs/WEBSITE_TELEMETRY_RC1.md) and [bridge runbook](bridge/README.md). Candidate branch: `codex/website-telemetry-rc1-01a097ee`; website deployment and owner acceptance remain separate.
+
 ## Run locally
 
 Use Node.js 22.13+ or 24 LTS. From this repository:
@@ -28,6 +30,7 @@ Production hosting: `npm ci`, `npm run build`, then `npm start` (the platform su
 npm run typecheck
 npm run lint
 npm test
+npm --prefix bridge test
 npm run build
 npm run check:security
 ```
@@ -36,6 +39,7 @@ With the production preview running and Google Chrome installed:
 
 ```powershell
 node tools/verify-browser.mjs
+node tools/verify-live-rankings.mjs
 ```
 
 Browser QA checks routes at 1440, 1024, 768, 390 and 320 pixels, navigation, forms, filters, internal links, missing pages, unavailable API states and console errors. Screenshots and results go to ignored `local/qa/`. Use `PORTAL_QA_BROWSER=msedge` for an installed Edge browser. No game server is started.

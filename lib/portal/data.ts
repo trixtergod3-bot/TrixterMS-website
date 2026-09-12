@@ -1,5 +1,6 @@
 import { TELEMETRY_KEYS } from "./contracts.ts";
 import type { AchievementsData, CharacterAchievementsData, PortalEnvelope, PortalQuery } from "./contracts.ts";
+import { isPublicPath, readPublic, PublicRateLimitError } from "./public-data.ts";
 
 // This module is for Server Components and Route Handlers only. No NEXT_PUBLIC secret or DB connection.
 type Obj = Record<string, unknown>;
@@ -157,6 +158,10 @@ function unavailable<T>(message = "Live data is not available yet."): PortalEnve
 /** Server-only reader, also used by the same-origin GET proxy. No user cookies or credentials forwarded. */
 export async function readPortal<T>(path: string, query: PortalQuery = {}): Promise<PortalEnvelope<T>> {
   if (typeof window !== "undefined") throw new Error("Portal reader requires the server");
+  if (isPublicPath(path)) {
+    try { return await readPublic<T>(path, query); }
+    catch (error) { if (error instanceof PublicRateLimitError) return unavailable<T>("Live data is temporarily busy."); throw error; }
+  }
   const request = portalRequest(path, query);
   if (request.kind === "daily" && process.env.TRIXTER_DAILY_RANKINGS_ENABLED !== "true" || request.kind === "weekly" && process.env.TRIXTER_WEEKLY_RANKINGS_ENABLED !== "true") return { ...unavailable<T>("Competition standings will open after server validation."), status: "disabled" };
   const configured = process.env.TRIXTER_READ_API_URL;
