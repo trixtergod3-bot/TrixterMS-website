@@ -1,11 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TrixterMS">
-  <defs>
-    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#55f2df"/>
-      <stop offset="1" stop-color="#786dff"/>
-    </linearGradient>
-  </defs>
-  <path fill="#070a10" d="M4 4h46l10 10v46H14L4 50z"/>
-  <path fill="none" stroke="url(#g)" stroke-width="3" d="M5.5 5.5h43.9l9.1 9.1v43.9H14.6l-9.1-9.1z"/>
-  <path fill="url(#g)" d="M15 16h35v9H37v25H27V25H15z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TRIXTERMS">
+  <defs><linearGradient id="portal" x1="8" y1="4" x2="54" y2="59" gradientUnits="userSpaceOnUse"><stop stop-color="#b7f5ff"/><stop offset=".48" stop-color="#3fcaff"/><stop offset="1" stop-color="#657dff"/></linearGradient></defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#071738" stroke="#457fde" stroke-width="2"/>
+  <circle cx="32" cy="32" r="24" fill="#102b5c" stroke="url(#portal)" stroke-width="2"/>
+  <path fill="url(#portal)" d="M15 17h36l-3 9H37v24H27V26H13z"/>
+  <path fill="#e0fbff" d="m51 5 2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
 </svg>

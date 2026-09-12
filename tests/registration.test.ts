@@ -94,6 +94,48 @@ void test('production requires authenticated proxy address and secure CSRF cooki
   assert.match(legitimate.headers.get('set-cookie') ?? '', /HttpOnly; SameSite=Strict; Max-Age=1800; Secure/);
 });
 
+void test('registration shares canonical origin normalization with metadata and rejects the www request origin', async () => {
+  const settings = { ...env, NODE_ENV: 'production', TRIXTER_SITE_URL: 'https://www.trixterms.com/',
+    TRIXTER_REGISTRATION_URL: 'https://registration.example.invalid/create',
+    TRIXTER_REGISTRATION_ABUSE_GUARD: 'reviewed-distributed-gateway',
+    TRIXTER_REGISTRATION_PROXY_SECRET: 'test-only-proxy-'.repeat(3) };
+  const headers = { Origin: 'https://trixterms.com',
+    'X-Trixter-Edge-Token': settings.TRIXTER_REGISTRATION_PROXY_SECRET,
+    'X-Trixter-Client-IP': '203.0.113.43' };
+  const dependencies = { limiter: new RegistrationRateLimiter(), now: () => now };
+  const start = await handleRegistrationRequest(new Request('https://trixterms.com/api/register', { headers }), settings, dependencies);
+  assert.equal(start.status, 200);
+  const body = await start.json();
+  const cookie = start.headers.get('set-cookie')?.split(';')[0] ?? '';
+  let calls = 0;
+  const transport = { ...dependencies, fetch: async () => {
+    calls++;
+    return Response.json({ code: 'ACCOUNT_CREATED' }, { status: 201 });
+  } };
+  const post = (origin: string) => new Request('https://trixterms.com/api/register', { method: 'POST',
+    headers: { ...headers, Origin: origin, 'Content-Type': 'application/json', 'X-CSRF-Token': body.csrfToken, Cookie: cookie },
+    body: JSON.stringify(input) });
+  assert.equal((await handleRegistrationRequest(post('https://www.trixterms.com'), settings, transport)).status, 403);
+  assert.equal(calls, 0);
+  assert.equal((await handleRegistrationRequest(post('https://trixterms.com'), settings, transport)).status, 201);
+  assert.equal(calls, 1);
+});
+
+void test('registration fails closed for missing or invalid production site origins', () => {
+  const settings = { ...env, NODE_ENV: 'production',
+    TRIXTER_REGISTRATION_URL: 'https://registration.example.invalid/create',
+    TRIXTER_REGISTRATION_ABUSE_GUARD: 'reviewed-distributed-gateway',
+    TRIXTER_REGISTRATION_PROXY_SECRET: 'test-only-proxy-'.repeat(3) };
+  const credentialOrigin = new URL('https://trixterms.com');
+  credentialOrigin.username = 'name';
+  credentialOrigin.password = 'secret';
+  for (const origin of [undefined, '', 'https://localhost', 'https://127.0.0.1',
+    'https://trixterms.com/portal', 'https://trixterms.com?', 'https://trixterms.com#',
+    'https://trixterms.com:4315', credentialOrigin.href]) {
+    assert.deepEqual(getRegistrationAvailability({ ...settings, TRIXTER_SITE_URL: origin }), { enabled: false });
+  }
+});
+
 void test('upstream failures, unknown status, and mismatched codes are generic and never retried', async () => {
   for (const upstream of [Response.json({ code: 'ACCOUNT_CREATED' }, { status: 200 }), Response.json({ code: 'UNKNOWN' }, { status: 201 })]) {
     const context = await session(); let calls = 0;
