@@ -76,12 +76,14 @@ void test('enabled launcher-only download renders bootstrap instructions and exa
   assert.equal(downloads.fullClient, null);
 });
 
-void test('enabled full-client download renders archive instructions while retaining both published artifact URLs', () => {
+void test('launcher stays primary even when legacy archive metadata is present', () => {
   const { html, visibleText, downloads } = renderDownload(true);
   assertPublicPresentation(html, visibleText);
-  assert.match(visibleText, /Download the full client and extract the entire archive/);
-  assert.doesNotMatch(visibleText, /only file in this folder/);
-  assert.ok(html.includes(`href="${fullClient.url}"`));
-  assert.equal(downloads.fullClient?.filename, fullClient.filename);
-  assert.equal(downloads.fullClient?.url, fullClient.url);
+  assert.match(visibleText, /DOWNLOAD FOR WINDOWS/);
+  assert.match(visibleText, /Windows x64/);
+  assert.match(visibleText, /PLAY stays disabled/);
+  assert.match(visibleText, /click UPDATE/);
+  assert.match(visibleText, /only file in this folder/);
+  assert.ok(!html.includes(`href="${fullClient.url}"`));
+  assert.equal(downloads.fullClient?.url, fullClient.url, 'Legacy metadata contract remains compatible');
 });

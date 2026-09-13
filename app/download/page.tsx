@@ -3,12 +3,12 @@ import Link from 'next/link';
 import { Download, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { PageHero } from '@/components/shared/page-hero';
 import { getPublicIntegrations, type DownloadArtifact } from '@/lib/portal/integrations';
-export const metadata: Metadata = { title: 'Download TRIXTERMS', description: 'Download the TRIXTERMS beta client and launcher, check release information, and start playing.' };
+export const metadata: Metadata = { title: 'Download TRIXTERMS', description: 'Download the Windows launcher, install TRIXTERMS, and sign in through the native game login.' };
 export const dynamic = 'force-dynamic';
 function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: string }) {
   return <article className="portal-panel"><Download aria-hidden="true" /><h3>{title}</h3>
-    <p>{title} · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MB</p>
-    <a className="button button-primary" href={artifact.url} rel="noopener noreferrer">Download {title}</a>
+    <p>{title} · Windows x64 · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MiB</p>
+    <a className="button button-primary" href={artifact.url} rel="noopener noreferrer">{title === 'Launcher' ? 'DOWNLOAD FOR WINDOWS' : `Download ${title}`}</a>
     <details><summary>SHA-256 checksum</summary><code className="checksum">{artifact.sha256}</code></details>
   </article>;
 }
@@ -22,12 +22,12 @@ export default function DownloadPage() {
       <div className="section-heading"><div><span className="eyebrow">Download center</span><h2 id="download-title">Get TRIXTERMS</h2></div>
         <Link className="button button-secondary" href="/patch-notes">Patch notes</Link></div>
       {downloads ? <>
-        <p>Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion}</p>
+        <p>Published beta · Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion}</p>
         <div className="portal-grid">
-          {downloads.fullClient && <Artifact artifact={downloads.fullClient} title="Full client" />}
+          {!downloads.launcher && downloads.fullClient && <Artifact artifact={downloads.fullClient} title="Full client" />}
           {downloads.launcher && <Artifact artifact={downloads.launcher} title="Launcher" />}
         </div>
-        {downloads.manifest && <p><a href={downloads.manifest.url} rel="noopener noreferrer">Release manifest</a> · sequence {downloads.manifest.sequence}. The launcher authenticates the signed manifest and verifies managed files before applying updates.</p>}
+        {downloads.manifest && <details><summary>Release verification details</summary><p><a href={downloads.manifest.url} rel="noopener noreferrer">Release manifest</a> · sequence {downloads.manifest.sequence}. The launcher authenticates the signed manifest and verifies managed files before applying updates.</p></details>}
       </> : <div className="portal-panel"><span className="eyebrow">Release preparation</span>
         <h3>The next journey is getting ready.</h3><p>Beta downloads will appear here when the client and launcher are published. Current release version and patch status are awaiting publication.</p>
         <span className="button button-disabled" aria-disabled="true">Downloads coming soon</span>
@@ -38,13 +38,13 @@ export default function DownloadPage() {
       <div className="portal-grid portal-grid-three">
         <article className="portal-panel"><span className="section-index">01</span><h3>Create your account</h3><p>Register your account ID and password through the registration page when it opens.</p><Link href="/register">Account registration</Link></article>
         <article className="portal-panel"><span className="section-index">02</span>
-          <h3>{downloads?.launcher && !downloads.fullClient ? 'Install with the launcher' : 'Install the game'}</h3>
-          {downloads?.fullClient ? <p>Download the full client and extract the entire archive into a writable folder. Keep its files together. If you download the launcher separately, place it in that same folder.</p>
-            : downloads?.launcher ? <p>Download the launcher into your chosen writable installation folder. If it comes in a ZIP, extract it there first. The launcher can be the only file in this folder; it downloads and verifies the game files for you.</p>
+          <h3>{downloads?.launcher ? 'Install with the launcher' : 'Install the game'}</h3>
+          {downloads?.fullClient && !downloads.launcher ? <p>Download the full client and extract the entire archive into a writable folder. Keep its files together. If you download the launcher separately, place it in that same folder.</p>
+            : downloads?.launcher ? <p>Download the launcher into your chosen writable installation folder. If it comes in a ZIP, extract it there first. The launcher can be the only file in this folder; click UPDATE after the initial check. It downloads and verifies the game files for you.</p>
               : <p>Installation instructions will match the published package. A launcher-only release installs the game into your chosen folder; a full-client archive is extracted there.</p>}
           {downloads && <p>Open the supplied launcher executable without renaming it.</p>}
         </article>
-        <article className="portal-panel"><span className="section-index">03</span><h3>Launch and sign in</h3><p>Let the launcher check your files. Press Play, then enter your ID and password on MapleStory’s native login screen.</p></article>
+        <article className="portal-panel"><span className="section-index">03</span><h3>Launch and sign in</h3><p>PLAY stays disabled while the launcher checks, updates, and verifies your files. Wait for Ready to play, then press PLAY and enter your ID and password on MapleStory’s native login screen.</p></article>
       </div>
     </section>
     <section className="shell portal-section portal-grid">
