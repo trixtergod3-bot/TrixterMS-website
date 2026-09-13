@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a09b6a-e725-7912-a25c-633e83052ef9",
+  "chatSlug": "final-launch-flow-01a09b6a",
+  "chatTitle": "Finalize TRIXTERMS launch flow",
+  "task": "Finalize public website acquisition, launcher validation UX, release integration and runtime verification",
+  "status": "BLOCKED",
+  "localWorktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/website-final-launch-flow-01a09b6a",
+  "branch": "codex/final-launch-flow-01a09b6a",
+  "localHead": "54fe0e60cb18c78fc257252daa6484a64fdfc754",
+  "publicationBranch": "codex/final-launch-flow-01a09b6a",
+  "latestCommit": "54fe0e60cb18c78fc257252daa6484a64fdfc754",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": true,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "website:app/download/page.tsx",
+    "website:tests/download-render.test.ts",
+    "website:tools/verify-download-flow.mjs",
+    "website:docs/LAUNCHER_DOWNLOAD_DEPLOYMENT.md",
+    "docs/FINAL_WEBSITE_LAUNCH_FLOW.md",
+    "docs/coordination/chats/final-launch-flow-01a09b6a-verification.json",
+    "docs/coordination/chats/final-launch-flow-01a09b6a.md",
+    "docs/coordination/chats/final-launch-flow-01a09b6a.json",
+    "docs/coordination/chats/README.md"
+  ],
+  "dependencies": [
+    "Corrective launcher 1.3.3 publication and clean-room verification"
+  ],
+  "collisionRisks": [
+    "Do not modify active public-beta-patcher-v1 source or publish feed concurrently",
+    "Website base is approved midnight production candidate 7abc5c3, not unrelated telemetry source"
+  ],
+  "remainingWork": [
+    "Complete and verify corrective launcher publication/clean-room in owning patcher lane",
+    "Authenticate Hostinger and deploy reviewed website with final verified metadata",
+    "External laptop native login and gameplay acceptance"
+  ],
+  "ownerQa": [
+    "External laptop website-only install, zero-download recheck and managed-file repairs",
+    "Native manual login, character/channel entry, reconnect and Cash Shop return"
+  ],
+  "sourceCoverage": "Website implementation and local browser behavior verified; production deployment and launcher release acceptance remain blocked.",
+  "evidence": [
+    "Website source checkpoint 54fe0e60cb18c78fc257252daa6484a64fdfc754 remotely verified",
+    "58 website unit tests, build, typecheck, lint, 120 route/viewport checks, 16 production checks, 3 download flows passed",
+    "12 publisher checks and generic signed publisher E2E passed",
+    "Public sequence 3 signature, health, resume and downloaded launcher SHA verified, but its actual clean-room Ready check fails",
+    "22 public game ports reachable from operator PC; native login and external laptop acceptance unverified"
+  ],
+  "lastUpdated": "2026-09-13T16:07:39.9257451Z",
+  "lane": "website-launcher-integration",
+  "objective": "Finalize public website acquisition, launcher validation UX, release integration and runtime verification",
+  "worktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/website-final-launch-flow-01a09b6a",
+  "state": "blocked",
+  "currentAction": "Website and local validation complete; awaiting repository reconnection permission and corrective public release verification",
+  "lastCompleted": "",
+  "blocker": "Hostinger Git provider disconnected; Redeploy disabled. Automatic approval review blocked opening Git connection without explicit permission. Corrective launcher publication is still active in its owning lane.",
+  "filesChanged": [
+    "website:app/download/page.tsx",
+    "website:tests/download-render.test.ts",
+    "website:tools/verify-download-flow.mjs",
+    "website:docs/LAUNCHER_DOWNLOAD_DEPLOYMENT.md",
+    "docs/FINAL_WEBSITE_LAUNCH_FLOW.md",
+    "docs/coordination/chats/final-launch-flow-01a09b6a-verification.json",
+    "docs/coordination/chats/final-launch-flow-01a09b6a.md",
+    "docs/coordination/chats/final-launch-flow-01a09b6a.json",
+    "docs/coordination/chats/README.md"
+  ],
+  "qaClient": "",
+  "qaLauncher": "",
+  "qaPort": "",
+  "runtime": "",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "Authorize repository-scoped Hostinger Git reconnection; native laptop acceptance after deployment.",
+  "nextAction": "Reconnect the existing website Git provider only after explicit scoped authorization, then deploy with corrected verified release metadata"
+}
