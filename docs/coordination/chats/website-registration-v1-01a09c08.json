@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a09c08-6d27-7dc2-9f05-52c4b375ec61",
+  "chatSlug": "website-registration-v1-01a09c08",
+  "chatTitle": "Implement website registration V1",
+  "task": "Implement secure website registration compatible with native game login",
+  "status": "BLOCKED",
+  "localWorktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/website-registration-v1-01a09c08",
+  "branch": "codex/website-registration-v1-01a09c08",
+  "localHead": "109d7cc56dade0801954c93ddd9e1a883ddc6811",
+  "publicationBranch": "codex/website-registration-v1-01a09c08",
+  "latestCommit": "109d7cc56dade0801954c93ddd9e1a883ddc6811",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": false,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "components/portal/registration-form.tsx",
+    "registration/src",
+    "registration/tests",
+    "registration/tools",
+    "registration/package.json",
+    "registration/package-lock.json",
+    "registration/.env.example",
+    "docs/WEBSITE_REGISTRATION_V1.md"
+  ],
+  "dependencies": [
+    "Authoritative beta-host administration session",
+    "Restored Hostinger Git deployment and trusted edge routing"
+  ],
+  "collisionRisks": [
+    "Shared game checkout dirty; isolated website branch based on approved production candidate"
+  ],
+  "remainingWork": [
+    "Provision dedicated writer and limiter table on confirmed beta database",
+    "Configure and verify trusted HTTPS routing and private environment",
+    "Deploy reviewed website/service after owner access restoration",
+    "Perform clean-laptop website-created-account to native LOGIN_PASSWORD canary"
+  ],
+  "ownerQa": [
+    "One owner-operated fresh account registration on production website, exactly one normal-player row, approved launcher Update/Play and successful native credential login"
+  ],
+  "sourceCoverage": "13 owned website/service/source/test/docs files published; no game code, proprietary assets, credentials or databases",
+  "evidence": [
+    "Website 58/58 tests PASS",
+    "Backend 6/6 test groups PASS",
+    "Production build, typecheck, lint PASS",
+    "Real browser -> Next.js -> HTTP service -> isolated MariaDB -> actual Java password verifier PASS",
+    "Ten additional concurrent-duplicate rounds PASS",
+    "Browser mismatch/duplicate/rate-limit/outage/unexpected/double-submit and password clearing PASS",
+    "Security scan 124 publishable text files and 55 generated browser bundles: zero findings",
+    "No production deployment or native-client acceptance performed; owner explicitly deferred deployment"
+  ],
+  "lastUpdated": "2026-09-13T18:52:41.2987768Z",
+  "lane": "website-registration",
+  "objective": "Implement secure website registration compatible with native game login",
+  "worktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/website-registration-v1-01a09c08",
+  "state": "blocked",
+  "currentAction": "Local implementation and checks complete; publishing durable handoff",
+  "lastCompleted": "Real browser/Next/service/MariaDB/native Java verifier integration passed; final repeat found concurrency issue now adjusted",
+  "blocker": "Owner confirmed no production administration access; deployment explicitly deferred",
+  "filesChanged": [
+    "components/portal/registration-form.tsx",
+    "registration/src",
+    "registration/tests",
+    "registration/tools",
+    "registration/package.json",
+    "registration/package-lock.json",
+    "registration/.env.example",
+    "docs/WEBSITE_REGISTRATION_V1.md"
+  ],
+  "qaClient": "",
+  "qaLauncher": "",
+  "qaPort": "",
+  "runtime": "Task-owned MariaDB 14317 stopped; temporary browser preview 14318 stopped. Existing game runtimes unchanged.",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "Restore beta-host administration and Hostinger deployment; no credentials in task",
+  "nextAction": "Use documented deployment runbook once access restored"
+}
