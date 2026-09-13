@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, type SubmitEvent } from 'react';
+import { useEffect, useRef, useState, type SubmitEvent } from 'react';
 import Link from 'next/link';
 const messages: Record<string, string> = {
   INVALID_REGISTRATION: 'Use 4–13 letters or numbers for your ID and 8–32 printable characters without spaces for your password. Both passwords must match.',
@@ -7,12 +7,14 @@ const messages: Record<string, string> = {
   RATE_LIMITED: 'Too many attempts. Please wait before trying again.',
   REGISTRATION_UNAVAILABLE: 'Registration is not available right now. Please check back soon.',
   REQUEST_REJECTED: 'Your form session expired. Refresh this page and try again.',
+  UNEXPECTED_FAILURE: 'An unexpected response prevented confirmation. Please try again later.',
 };
 export function RegistrationForm({ enabled }: { enabled: boolean }) {
   const [csrfToken, setCsrfToken] = useState('');
   const [pending, setPending] = useState(false);
   const [created, setCreated] = useState(false);
   const [message, setMessage] = useState('');
+  const submitting = useRef(false);
   useEffect(() => {
     if (!enabled) return;
     const abort = new AbortController();
@@ -26,12 +28,17 @@ export function RegistrationForm({ enabled }: { enabled: boolean }) {
   }, [enabled]);
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!enabled || !csrfToken || pending || created) return;
+    if (!enabled || !csrfToken || pending || created || submitting.current) return;
     const form = event.currentTarget; const values = new FormData(form);
+    // Clear secrets immediately, including client-side validation failures.
+    for (const name of ['password', 'passwordConfirmation']) {
+      const field = form.elements.namedItem(name);
+      if (field instanceof HTMLInputElement) field.value = '';
+    }
     if (values.get('password') !== values.get('passwordConfirmation')) {
       setMessage('The two passwords do not match.'); return;
     }
-    setPending(true); setMessage('');
+    submitting.current = true; setPending(true); setMessage('');
     try {
       const response = await fetch('/api/register', {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
@@ -41,13 +48,13 @@ export function RegistrationForm({ enabled }: { enabled: boolean }) {
       const result = await response.json();
       if (response.status === 201 && result.code === 'ACCOUNT_CREATED') {
         form.reset(); setCreated(true); setMessage('Your account is ready. Open MapleStory and sign in on its ID and password screen.');
-      } else setMessage(messages[result.code] ?? messages.REGISTRATION_UNAVAILABLE);
+      } else setMessage(messages[result.code] ?? messages.UNEXPECTED_FAILURE);
     } catch { setMessage(messages.REGISTRATION_UNAVAILABLE); }
-    finally { setPending(false); }
+    finally { submitting.current = false; setPending(false); }
   }
   return <form className="portal-panel registration-form" onSubmit={submit} aria-labelledby="registration-form-title">
     <h2 id="registration-form-title">Create your account</h2>
-    {!enabled && <p className="portal-notice">Registration will open when the beta account service is ready.</p>}
+    {!enabled && <p className="portal-notice">Registration is temporarily unavailable. Please check back soon.</p>}
     <fieldset disabled={!enabled || pending || created}>
       <div className="field"><label htmlFor="register-username">Account ID</label>
         <input id="register-username" name="username" autoComplete="username" minLength={4} maxLength={13}
