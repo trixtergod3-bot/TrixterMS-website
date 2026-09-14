@@ -7,3 +7,5 @@
 | push-website-to-git-01a09709 | Push TrixterMS website to Git | main | [JSON](push-website-to-git-01a09709.json) | [MD](push-website-to-git-01a09709.md) |
 
 The lane JSON records a verified source checkpoint. Owner acceptance and deployment are independent evidence fields. This directory is also intended for discovery through the shared TrixterMS coordination registry.
+
+- Deploy Public Beta download — `codex/public-beta-deploy-01a09f41`: [handoff](public-beta-deploy-01a09f41.md), [status](public-beta-deploy-01a09f41.json).
