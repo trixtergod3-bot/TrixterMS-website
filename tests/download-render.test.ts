@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
-import { createElement, type ComponentType } from 'react';
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as jsxRuntime from 'react/jsx-runtime';
 import Link from 'next/link.js';
@@ -38,16 +38,16 @@ const release = {
   manifest: { url: 'https://downloads.example.invalid/beta/manifest.json', sequence: 1 },
 };
 
-function renderDownload(withFullClient: boolean) {
+async function renderDownload(withFullClient: boolean) {
   const integrations = getPublicIntegrations({ TRIXTER_RELEASE_DOWNLOADS_JSON: JSON.stringify({ ...release, fullClient: withFullClient ? fullClient : null }) });
   assert.ok(integrations.downloads, 'Synthetic published metadata must pass the actual release validator');
   const modules = new Map<string, unknown>([
     ['react/jsx-runtime', jsxRuntime], ['next/link', { __esModule: true, default: Link }], ['lucide-react', icons],
-    ['@/lib/portal/integrations', { getPublicIntegrations: () => integrations }],
+    ['@/lib/portal/release-downloads', { getReleaseDownloads: async () => integrations.downloads }],
   ]);
   modules.set('@/components/shared/page-hero', compileComponent('../components/shared/page-hero.tsx', modules));
   const page = compileComponent('../app/download/page.tsx', modules);
-  const html = renderToStaticMarkup(createElement(page.default as ComponentType));
+  const html = renderToStaticMarkup(await (page.default as () => Promise<ReactNode>)());
   const visibleText = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
   return { html, visibleText, downloads: integrations.downloads };
 }
@@ -64,8 +64,8 @@ function assertPublicPresentation(html: string, visibleText: string) {
   assert.match(visibleText, /SHA-256/);
 }
 
-void test('enabled launcher-only download renders bootstrap instructions and exact artifact URL without legacy display branding', () => {
-  const { html, visibleText, downloads } = renderDownload(false);
+void test('enabled launcher-only download renders bootstrap instructions and exact artifact URL without legacy display branding', async () => {
+  const { html, visibleText, downloads } = await renderDownload(false);
   assertPublicPresentation(html, visibleText);
   assert.match(visibleText, /Install with the launcher/);
   assert.match(visibleText, /only file in this folder/);
@@ -76,22 +76,21 @@ void test('enabled launcher-only download renders bootstrap instructions and exa
   assert.equal(downloads.fullClient, null);
 });
 
-void test('launcher stays primary even when legacy archive metadata is present', () => {
-  const { html, visibleText, downloads } = renderDownload(true);
+void test('both production choices render with launcher first', async () => {
+  const { html, visibleText, downloads } = await renderDownload(true);
   assertPublicPresentation(html, visibleText);
-  assert.match(visibleText, /DOWNLOAD FOR WINDOWS/);
+  assert.match(visibleText, /DOWNLOAD LAUNCHER/);
   assert.match(visibleText, /Windows x64/);
   assert.match(visibleText, /PLAY stays disabled/);
   assert.match(visibleText, /click UPDATE/);
   assert.match(visibleText, /only file in this folder/);
-  assert.ok(!html.includes(`href="${fullClient.url}"`));
+  assert.ok(html.includes(`href="${fullClient.url}"`));
   assert.equal(downloads.fullClient?.url, fullClient.url, 'Legacy metadata contract remains compatible');
 });
 
-void test('startup QA remains downloadable without presenting it as a fresh installation', () => {
-  const { html, visibleText } = renderDownload(false);
-  assert.match(visibleText, /requires an existing game installation/);
-  assert.match(visibleText, /install the game with the Windows launcher above first/);
-  assert.match(html, /href="https:\/\/floralwhite-stinkbug-872547\.hostingersite\.com\/beta\/qa\/TrixterMS-Startup-QA-1\.3\.4-qa1-78107ef1e9f7\.zip\?verify=78107ef1e9f7"/);
-  assert.match(visibleText, /78107EF1E9F732F357DB24AEBBF5FBFA621465420AD4E08353A25A61BD749293/);
+void test('production downloads contain no QA or debug content', async () => {
+  const { visibleText } = await renderDownload(true);
+  assert.doesNotMatch(visibleText, /QA|diagnostic|debug/);
+  assert.match(visibleText, /DOWNLOAD FULL CLIENT/);
+  assert.match(visibleText, /Complete game package/);
 });

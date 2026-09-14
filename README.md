@@ -63,3 +63,7 @@ Home, download, register, rankings, daily and weekly rankings, achievements, dat
 Published repository: `trixtergod3-bot/TrixterMS-website`, candidate branch **`codex/web-production-candidate-v1`** (main is preserved). Use the repository root (`.`), the Next.js Node server preset, and Node 24.x in Hostinger. Install with `npm ci --include=dev`, build with `npm run build`, and start with `npm start`; output is `.next`.
 
 See [the candidate deployment runbook](docs/WEBSITE_DEPLOYMENT.md) for environment values and connection steps, and the candidate handoff in `docs/coordination/chats/` for its verified source revision. Earlier main publication receipts remain historical evidence. Hosting connection and deployment have not been performed. Keep the independently managed `/beta` patch feed and payloads intact before any future domain cutover.
+
+### Public download releases
+
+Set TRIXTER_RELEASE_METADATA_URL to https://floralwhite-stinkbug-872547.hostingersite.com/beta/releases/current.json in the existing Hostinger app. The reader validates both artifacts and checks the current manifest hash, release version and sequence. It fails closed during mismatched or incomplete publication. Existing TRIXTER_RELEASE_DOWNLOADS_JSON remains supported only when no metadata URL is configured. Future releases require no JSX edits or per-version environment changes. The website and patch feed remain independent deployments.
