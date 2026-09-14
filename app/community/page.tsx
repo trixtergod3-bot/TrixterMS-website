@@ -14,7 +14,7 @@ import { PageHero } from '@/components/shared/page-hero';
 export const metadata: Metadata = {
   title: 'Community',
   description:
-    'The TrixterMS community hub for a future verified Discord invite, server announcements, world records, and patch notes.',
+    'The TRIXTERMS community hub for a future verified Discord invite, server announcements, world records, and patch notes.',
 };
 
 export default function CommunityPage() {

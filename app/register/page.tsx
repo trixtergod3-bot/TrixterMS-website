@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { PageHero } from '@/components/shared/page-hero';
 import { RegistrationForm } from '@/components/portal/registration-form';
 import { getRegistrationAvailability } from '@/lib/portal/registration';
-export const metadata: Metadata = { title: 'Register', description: 'Create a TrixterMS account and begin your MapleStory adventure.' };
+export const metadata: Metadata = { title: 'Register', description: 'Create a TRIXTERMS account and begin your MapleStory adventure.' };
 export const dynamic = 'force-dynamic';
 export default function RegisterPage() {
   const { enabled } = getRegistrationAvailability();
@@ -14,9 +14,9 @@ export default function RegisterPage() {
       <RegistrationForm enabled={enabled} />
       <aside className="portal-panel"><span className="eyebrow">Ready for the journey</span>
         <h2>Sign in inside the game.</h2>
-        <p>Your TrixterMS account uses MapleStory’s native ID and password screen. The launcher handles your game files.</p>
+        <p>Your TRIXTERMS account uses MapleStory’s native ID and password screen. The launcher handles your game files.</p>
         <p>Already have an account? Download the client and use your existing login.</p>
-        <Link className="button button-secondary" href="/download">Get TrixterMS</Link>
+        <Link className="button button-secondary" href="/download">Get TRIXTERMS</Link>
         <p>Password recovery is not available during this beta preparation. Keep your password somewhere safe.</p>
       </aside>
     </section>

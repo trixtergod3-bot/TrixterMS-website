@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir,writeFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
-const base=process.env.PORTAL_QA_URL??'http://127.0.0.1:4315';
+const base=process.env.PORTAL_QA_URL??'http://127.0.0.1:4316';
 if(!['127.0.0.1','localhost'].includes(new URL(base).hostname))throw new Error('QA must target loopback');
 const routes=['/','/download','/register','/rankings','/rankings/daily','/rankings/weekly','/achievements','/database','/free-market','/vote','/donate','/discord','/news','/character/PortalTest','/status','/classes','/features','/guide','/patch-notes','/players','/events','/boss-records','/live-world','/database/rare-drops'];
 const screenshots=new Set(['/','/achievements','/download','/register','/rankings','/database','/free-market']);

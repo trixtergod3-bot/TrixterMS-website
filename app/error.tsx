@@ -12,7 +12,7 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('TrixterMS public route failed', error);
+    console.error('TRIXTERMS public route failed', error);
   }, [error]);
 
   return (

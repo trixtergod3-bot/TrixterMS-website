@@ -1,5 +1,5 @@
 import { TELEMETRY_KEYS } from "./contracts.ts";
-import type { AchievementsData, CharacterAchievementsData, PortalEnvelope, PortalQuery } from "./contracts.ts";
+import type { AchievementsData, CharacterAchievementsData, PortalEnvelope, PortalQuery, StatusData } from "./contracts.ts";
 
 // This module is for Server Components and Route Handlers only. No NEXT_PUBLIC secret or DB connection.
 type Obj = Record<string, unknown>;
@@ -90,11 +90,43 @@ function characterAchievements(value: Obj): CharacterAchievementsData {
   return { name: name(value.name), catalogVersion: integer(value.catalogVersion, 1), points, totalPoints, achievements, recentUnlocks };
 }
 
+function publicStatus(value: Obj): StatusData {
+  const rates = object(value.rates);
+  const rate = (input: unknown) => {
+    if (typeof input !== "number" || !Number.isFinite(input) || input < 0 || input > 1000000) throw new Error("Invalid rate");
+    return input;
+  };
+  const publicLabel = (input: unknown) => {
+    const label = string(input, 64);
+    if (!label.trim()) throw new Error("Empty public label");
+    return label;
+  };
+  const result: StatusData = {
+    online: nullable(value.online, boolean), playersOnline: nullable(value.playersOnline, integer),
+    version: nullable(value.version, (input) => string(input, 40)),
+    rates: { exp: nullable(rates.exp, rate), meso: nullable(rates.meso, rate), drop: nullable(rates.drop, rate) },
+  };
+  // Preserve the original status shape for older read backends. Missing channel observations are never zeroes.
+  if (value.world !== undefined) result.world = nullable(value.world, (input) => {
+    const world = object(input);
+    return { id: integer(world.id, 0, 255), name: nullable(world.name, publicLabel) };
+  });
+  if (value.channels !== undefined) result.channels = nullable(value.channels, (input) => {
+    const channels = list(input, (row) => {
+      const channel = object(row);
+      return { id: integer(channel.id, 1, 255), name: nullable(channel.name, publicLabel), online: nullable(channel.online, boolean), playersOnline: nullable(channel.playersOnline, integer) };
+    }, 100);
+    if (new Set(channels.map((channel) => channel.id)).size !== channels.length) throw new Error("Duplicate public channel");
+    return channels;
+  });
+  return result;
+}
+
 /** Project every backend response through an explicit public field allowlist. */
 export function validatePortalData(kind: Kind, value: unknown): unknown {
   const v = object(value);
   switch (kind) {
-    case "status": { const rates = object(v.rates); const rate = (x: unknown) => { if (typeof x !== "number" || !Number.isFinite(x) || x < 0 || x > 1000000) throw new Error("Invalid rate"); return x; }; return { online: nullable(v.online, boolean), playersOnline: nullable(v.playersOnline, integer), version: nullable(v.version, (x) => string(x, 40)), rates: { exp: nullable(rates.exp, rate), meso: nullable(rates.meso, rate), drop: nullable(rates.drop, rate) } }; }
+    case "status": return publicStatus(v);
     case "rankings": return { entries: leaderboard(v.entries), total: nullable(v.total, integer) };
     case "daily": case "weekly": {
       const entries = leaderboard(v.entries), finalized = boolean(v.finalized), winner = nullable(v.winner, name);
