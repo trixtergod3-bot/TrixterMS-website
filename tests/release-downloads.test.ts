@@ -38,3 +38,15 @@ void test('oversized metadata and network failure hide downloads', async () => {
   assert.equal(await getReleaseDownloads(env, (async () => new Response('x'.repeat(16_385))) as typeof fetch), null);
   assert.equal(await getReleaseDownloads(env, (async () => { throw new Error('offline'); }) as typeof fetch), null);
 });
+void test('a promoted next manifest selects the next immutable archive without page edits', async () => {
+  const previous = await getReleaseDownloads(env, mock());
+  const nextEnvelope = JSON.stringify({ schema: 'trixterms.signed-client-update-envelope.v1',
+    payload: Buffer.from(JSON.stringify({ ...manifest, sequence: 6, releaseVersion: 'beta.6' })).toString('base64') });
+  const nextMetadata = { ...metadata, releaseVersion: 'beta.6',
+    fullClient: { ...metadata.fullClient, filename: 'TRIXTERMS-next.zip', url: `${base}/releases/TRIXTERMS-next.zip`, sha256: 'B'.repeat(64) },
+    manifest: { ...metadata.manifest, sequence: 6, sha256: createHash('sha256').update(nextEnvelope).digest('hex').toUpperCase() } };
+  const next = await getReleaseDownloads(env, mock(nextMetadata, nextEnvelope));
+  assert.equal(next?.manifest?.sequence, 6);
+  assert.equal(next?.fullClient?.url, nextMetadata.fullClient.url);
+  assert.notEqual(next?.fullClient?.sha256, previous?.fullClient?.sha256);
+});
