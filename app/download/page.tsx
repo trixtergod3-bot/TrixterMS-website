@@ -7,7 +7,7 @@ import { getReleaseDownloads } from '@/lib/portal/release-downloads';
 export const metadata: Metadata = { title: 'Download TRIXTERMS', description: 'Download the Windows launcher, install TRIXTERMS, and sign in through the native game login.' };
 export const dynamic = 'force-dynamic';
 function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: string }) {
-  return <article className="portal-panel"><Download aria-hidden="true" /><h3>{title}</h3>
+  return <article className="portal-panel"><Download aria-hidden="true" /><h3>{title === 'Launcher' ? 'PUBLIC BETA LAUNCHER' : 'FULL PUBLIC BETA CLIENT'}</h3>
     <p>{title === 'Launcher' ? 'Small download. Installs or updates TRIXTERMS automatically.' : 'Complete game package. Extract, launch and play.'}</p><p>Windows x64 · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MiB</p>
     <a className={title === 'Launcher' ? 'button button-primary' : 'button button-secondary'} href={artifact.url} rel="noopener noreferrer">{title === 'Launcher' ? 'DOWNLOAD LAUNCHER' : 'DOWNLOAD FULL CLIENT'}</a>
     <details><summary>SHA-256 checksum</summary><code className="checksum">{artifact.sha256}</code></details>
