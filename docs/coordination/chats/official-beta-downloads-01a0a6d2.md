@@ -1,6 +1,6 @@
 # Deploy official beta downloads
 
-Status: BLOCKED at owner-only Hostinger `Connect GitHub` control on the existing trixterms.com Deployments page. Automatic approval review rejected the click despite the owner's repository-specific authorization. Do not bypass the review. Owner action: **PRESS: Connect GitHub**.
+Status: BLOCKED at Hostinger `Connect GitHub` on the existing trixterms.com Deployments page. Owner gave action-time confirmation; the click was accepted twice, including after a fresh page reload. Each click closes the menu but no authorization tab appears; provider remains disconnected and Redeploy disabled. No console errors were recorded. The earlier automatic approval rejection is resolved. Owner action: **PRESS: Connect GitHub** directly in the visible menu.
 
 ## Reviewed candidate
 - Repository: trixtergod3-bot/TrixterMS-website
