@@ -43,6 +43,12 @@ export function createRegistrationServer({ token, enabled = () => false, store, 
     const result = await registerAccount(input, store, address);
     send(result.status, result.code);
   });
+  server.on('clientError', (_error, socket) => {
+    if (!socket.writable) return;
+    const body = '{"code":"INVALID_REGISTRATION"}';
+    socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Type: application/json\r\n'
+      + `Cache-Control: no-store\r\nContent-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`);
+  });
   server.maxConnections = 32;
   server.keepAliveTimeout = 5000;
   return server;

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { connect } from 'node:net';
 
 import { validateAccount, registerAccount } from '../src/account.mjs';
 import { accountStore } from '../src/database.mjs';
@@ -73,5 +74,13 @@ void test('real HTTP service enforces authentication, kill switch, size, origin,
     assert.equal(calls, 1);
     assert.ok(events.every(event => Object.keys(event).join() === 'event,status,code'));
     assert.ok(!JSON.stringify(events).includes(input.password));
+    const socket = connect(server.address().port, '127.0.0.1');
+    await once(socket, 'connect');
+    let wire = '';
+    socket.on('data', chunk => { wire += chunk.toString(); });
+    socket.write('BAD METHOD / HTTP/1.1\r\n\r\n');
+    await once(socket, 'close');
+    assert.match(wire, /^HTTP\/1\.1 400 /);
+    assert.ok(wire.endsWith('{"code":"INVALID_REGISTRATION"}'));
   } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
 });
