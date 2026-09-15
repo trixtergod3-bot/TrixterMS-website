@@ -10,3 +10,5 @@ The lane JSON records a verified source checkpoint. Owner acceptance and deploym
 
 - Deploy Public Beta download — `codex/public-beta-deploy-01a09f41`: [handoff](public-beta-deploy-01a09f41.md), [status](public-beta-deploy-01a09f41.json).
 | public-download-system-01a09fb8 | Build public download system | codex/public-download-system-01a09fb8 | [JSON](public-download-system-01a09fb8.json) | [MD](public-download-system-01a09fb8.md) |
+
+- Deploy official beta downloads — codex/official-beta-downloads-01a0a6d2: [handoff](official-beta-downloads-01a0a6d2.md), [status](official-beta-downloads-01a0a6d2.json).

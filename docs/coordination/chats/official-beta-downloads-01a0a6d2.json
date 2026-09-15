@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a0a6d2-8935-7a91-9d6f-ae214c2e94aa",
+  "chatSlug": "official-beta-downloads-01a0a6d2",
+  "chatTitle": "Deploy official beta downloads",
+  "task": "Deploy and publicly verify canonical Public Beta downloads on trixterms.com",
+  "status": "BLOCKED",
+  "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-official-beta-downloads-01a0a6d2",
+  "branch": "codex/official-beta-downloads-01a0a6d2",
+  "localHead": "f3ba18fa029261d9d84fcebc7ba43a31f503ae74",
+  "publicationBranch": "codex/official-beta-downloads-01a0a6d2",
+  "latestCommit": "f3ba18fa029261d9d84fcebc7ba43a31f503ae74",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": false,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "app/download/page.tsx",
+    "docs/coordination/chats/official-beta-downloads-01a0a6d2.json",
+    "docs/coordination/chats/official-beta-downloads-01a0a6d2.md",
+    "docs/coordination/chats/README.md"
+  ],
+  "dependencies": [
+    "Existing Hostinger GitHub provider for trixtergod3-bot/TrixterMS-website"
+  ],
+  "collisionRisks": [
+    "Recheck live production SHA and canonical current.json before deployment; preserve independent patch host and all existing environment values"
+  ],
+  "remainingWork": [
+    "Owner presses Connect GitHub",
+    "Inspect and back up relevant production configuration",
+    "Deploy candidate and verify real domain download buttons",
+    "Repeat feed/current release verification after deployment",
+    "Register handoff in default-branch directory after integration"
+  ],
+  "ownerQa": [
+    "Clean external laptop: both installation paths, native login, update and repeated PLAY"
+  ],
+  "sourceCoverage": "One-line headings change over verified public-download-system branch; inherited canonical current.json integration preserves production 7abc5c38. No other website implementation changes.",
+  "evidence": [
+    "Production inspected in Hostinger: current 7abc5c3882370a50232d12ab82017083881a09d0, Node 24, root ./, completed; Git disconnected",
+    "65 tests, lint, build, typecheck passed; security scan 118 source files and 55 bundles, zero findings; npm audit zero vulnerabilities",
+    "Local production browser renders both canonical sequence 10 links and exact requested headings",
+    "Both archives HTTP 200, full-stream exact sizes and SHA256 match current.json; no redirects; ZIP signatures verified",
+    "Signed manifest ECDSA verified, hash matches metadata, sequence 10; health.txt HTTP200 ok; sample SHA valid; range206; manifest unchanged",
+    "Real https://trixterms.com/download still shows DOWNLOADS COMING SOON; website deployment remains false"
+  ],
+  "lastUpdated": "2026-09-15T20:56:46.6827903Z",
+  "lane": "website-production",
+  "objective": "Deploy and publicly verify canonical Public Beta downloads on trixterms.com",
+  "worktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-official-beta-downloads-01a0a6d2",
+  "state": "blocked",
+  "currentAction": "Owner-only Connect GitHub gate; deployment candidate and public artifacts verified",
+  "lastCompleted": "Verified candidate, both complete public archives, signature and patch feed; checkpoint remote SHA verified",
+  "blocker": "Automatic approval review rejected Connect GitHub as a security-sensitive access change requiring confirmation at action time despite explicit owner authorization.",
+  "filesChanged": [
+    "app/download/page.tsx",
+    "docs/coordination/chats/official-beta-downloads-01a0a6d2.json",
+    "docs/coordination/chats/official-beta-downloads-01a0a6d2.md",
+    "docs/coordination/chats/README.md"
+  ],
+  "qaClient": "",
+  "qaLauncher": "",
+  "qaPort": "",
+  "runtime": "Existing Hostinger trixterms.com website; independent beta feed unchanged",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "PRESS: Connect GitHub",
+  "nextAction": "After owner connection, inspect repository-only authorization; preserve environment settings and back up changed configuration; select tested candidate, set TRIXTER_RELEASE_METADATA_URL, deploy and verify real domain.",
+  "releaseVersion": "v111.1-beta.1-character-select.1",
+  "artifactsVerified": true,
+  "websiteDeployed": false,
+  "productionCommit": "7abc5c3882370a50232d12ab82017083881a09d0"
+}
