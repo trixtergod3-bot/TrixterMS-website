@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a0a722-8a35-77b1-bb18-c9f376fb8830",
+  "chatSlug": "open-public-registration-01a0a722",
+  "chatTitle": "Open public registration safely",
+  "task": "Open secure public website registration and verify native login",
+  "status": "BLOCKED",
+  "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-open-public-registration-01a0a722",
+  "branch": "codex/open-public-registration-01a0a722",
+  "localHead": "5afe006af8482e3aadc2928b9630d956db06248e",
+  "publicationBranch": "codex/open-public-registration-01a0a722",
+  "latestCommit": "5afe006af8482e3aadc2928b9630d956db06248e",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": false,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "app/api/register/route.ts",
+    "components/portal/registration-form.tsx",
+    "lib/portal/registration.ts",
+    "tests/registration.test.ts",
+    "docs/REGISTRATION_AND_RELEASE_INTEGRATION.md",
+    "registration/",
+    "server/src/handling/login/AccountRegistrationService.java",
+    "server/src/handling/login/AccountRegistrationServiceSelfTest.java",
+    "server/src/handling/login/RegistrationGatewayWriter.java"
+  ],
+  "dependencies": [
+    "Hostinger production account access",
+    "Verified HTTPS gateway route and trusted client-IP ingress"
+  ],
+  "collisionRisks": [
+    "Before deployment re-read live Hostinger SHA and newest website main; preserve working sequence-10 downloads and independent feed",
+    "Do not replace shared game JAR from dirty Documents checkout; gateway uses separately compiled worker classes"
+  ],
+  "remainingWork": [
+    "Authenticate Hostinger and inspect current production SHA/settings",
+    "Configure verified HTTPS/private gateway routing and trusted edge identity",
+    "Provision limited writer and additive rate table; back up production configuration",
+    "Deploy service and set explicit alternate-writer disabled flags; verify effective runtime policy",
+    "Deploy matching website preserving downloads and independent patch feed",
+    "Controlled live registration and native LOGIN_PASSWORD verification"
+  ],
+  "ownerQa": [
+    "After HTTPS activation: one fresh account registered through website, exactly one normal row, official launcher manual credentials and observed LOGIN_PASSWORD"
+  ],
+  "sourceCoverage": "Website/gateway checkpoint 5afe006af8482e3aadc2928b9630d956db06248e and Java writer checkpoint ee3411c5d81b973900b105e036d0c3a513f350af; no binaries, secrets, databases, account identifiers, runtime deployment or main implementation merge",
+  "evidence": [
+    "66 website tests passed",
+    "Website build/typecheck/lint passed",
+    "132 source files and 55 browser bundles security scan passed",
+    "Website and gateway production dependency audit: zero vulnerabilities",
+    "Four gateway test groups passed",
+    "Java service compiled and strengthened self-test passed",
+    "Isolated real database integration: Java writer, normal defaults, case-only duplicates, five duplicate races, persistent IP/name limits, website handler -> gateway -> database passed",
+    "Live download page displays both canonical sequence-10 downloads",
+    "Independent current.json and health.txt HTTP200; health ok",
+    "Game writer checkpoint ee3411c5d81b973900b105e036d0c3a513f350af verified remotely",
+    "No production configuration, database, runtime or website mutation performed"
+  ],
+  "lastUpdated": "2026-09-15T22:36:05.3174451Z",
+  "lane": "public-registration",
+  "objective": "Open secure public website registration and verify native login",
+  "worktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-open-public-registration-01a0a722",
+  "state": "blocked",
+  "currentAction": "Source complete and locally tested; production access blocked by disconnected browser",
+  "lastCompleted": "Gateway source and Java worker checkpoints pushed and exact remote SHAs verified",
+  "blocker": "Connected Chrome browser unavailable. Owner reports signed-in Hostinger in an unconnected browser. Production HTTPS gateway and trusted ingress not provisioned.",
+  "filesChanged": [
+    "app/api/register/route.ts",
+    "components/portal/registration-form.tsx",
+    "lib/portal/registration.ts",
+    "tests/registration.test.ts",
+    "docs/REGISTRATION_AND_RELEASE_INTEGRATION.md",
+    "registration/",
+    "server/src/handling/login/AccountRegistrationService.java",
+    "server/src/handling/login/AccountRegistrationServiceSelfTest.java",
+    "server/src/handling/login/RegistrationGatewayWriter.java"
+  ],
+  "qaClient": "",
+  "qaLauncher": "",
+  "qaPort": "",
+  "runtime": "F:\\TRITER MS\\single-pc-runtime",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "Connect the signed-in Hostinger browser tab to Codex",
+  "nextAction": "Inspect production deployment/settings after sign-in; keep registration disabled until live gates pass",
+  "gameWriterCheckpoint": "ee3411c5d81b973900b105e036d0c3a513f350af",
+  "gameWriterBranch": "codex/registration-writer-01a0a722"
+}
