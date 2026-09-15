@@ -1,3 +1,5 @@
+> Superseded visual direction. This brief records the earlier autumn/teal/gold concept and is retained only as history. All current implementation and replacement artwork must follow [APPROVED_VISUAL_DIRECTION.md](APPROVED_VISUAL_DIRECTION.md), including the exact public brand TRIXTERMS.
+
 # TrixterMS beta portal: original visual asset brief
 
 Prepared 2026-09-12. This brief defines eleven portal asset slots. Some slots remain reserved for later original art. It does not claim that every slot has a finished illustration or that launcher artwork has been installed in the client.

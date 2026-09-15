@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
+import { getSiteConfig } from '../site-config.ts';
 type Environment = Record<string, string | undefined>;
 export type RegistrationCode = 'ACCOUNT_CREATED' | 'INVALID_REGISTRATION' | 'USERNAME_TAKEN'
   | 'RATE_LIMITED' | 'REGISTRATION_UNAVAILABLE' | 'REQUEST_REJECTED';
@@ -15,17 +16,16 @@ export function validateRegistration(value: unknown): RegistrationInput | null {
 }
 function configuration(env: Environment) {
   if (env.TRIXTER_REGISTRATION_ENABLED !== 'true'
+    || !env.TRIXTER_SITE_URL?.trim()
     || (env.TRIXTER_REGISTRATION_GATEWAY_TOKEN?.length ?? 0) < 32
     || (env.TRIXTER_REGISTRATION_CSRF_SECRET?.length ?? 0) < 32) return null;
   try {
-    const origin = new URL(env.TRIXTER_SITE_URL ?? '');
+    const origin = new URL(getSiteConfig(env).origin);
     const gateway = new URL(env.TRIXTER_REGISTRATION_URL ?? '');
     const production = env.NODE_ENV === 'production';
     const localHttp = (url: URL) => !production && url.protocol === 'http:'
       && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
-    if ((origin.protocol !== 'https:' && !localHttp(origin))
-      || (gateway.protocol !== 'https:' && !localHttp(gateway))
-      || origin.username || origin.password || origin.search || origin.hash || origin.pathname !== '/'
+    if ((gateway.protocol !== 'https:' && !localHttp(gateway))
       || gateway.username || gateway.password || gateway.hash || gateway.search) return null;
     if (production && (env.TRIXTER_REGISTRATION_ABUSE_GUARD !== 'reviewed-distributed-gateway'
       || (env.TRIXTER_REGISTRATION_PROXY_SECRET?.length ?? 0) < 32)) return null;

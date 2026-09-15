@@ -10,7 +10,7 @@ export default function Loading() {
             <span className="loading-card" key={index} />
           ))}
         </div>
-        <span className="sr-only">Loading TrixterMS data</span>
+        <span className="sr-only">Loading TRIXTERMS data</span>
       </div>
     </main>
   );

@@ -12,6 +12,16 @@ export interface StatusData {
   playersOnline: number | null;
   version: string | null;
   rates: { exp: number | null; meso: number | null; drop: number | null };
+  /** Optional public world identity. Omitted/null means the backend has not supplied it. */
+  world?: { id: number; name: string | null } | null;
+  /** Public channels observed with the envelope's asOf timestamp; never inferred from account login flags. */
+  channels?: PublicChannelStatus[] | null;
+}
+export interface PublicChannelStatus {
+  id: number;
+  name: string | null;
+  online: boolean | null;
+  playersOnline: number | null;
 }
 export interface LeaderboardEntry {
   rank: number;

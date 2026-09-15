@@ -12,6 +12,62 @@ const unlockedAchievement = { key: achievementDefinition.key, currentValue: "12"
 const lockedAchievement = { key: secondDefinition.key, currentValue: "12", threshold: "30", unlockedAt: null, pointsAwarded: 0 };
 const achievementCharacter = { name: "Example", catalogVersion: 2, points: 10, totalPoints: 30, achievements: [unlockedAchievement, lockedAchievement], recentUnlocks: [{ key: achievementDefinition.key, unlockedAt, pointsAwarded: 10 }] };
 
+void test("world and channel observations extend the original status contract without inventing missing data", () => {
+  assert.deepEqual(validatePortalData("status", status), status);
+  const unknown = { ...status, online: null, playersOnline: null, version: null, world: null, channels: null };
+  assert.deepEqual(validatePortalData("status", unknown), unknown);
+  const observed = {
+    ...status,
+    world: { id: 0, name: "Test World" },
+    channels: [
+      { id: 1, name: null, online: true, playersOnline: 4 },
+      { id: 2, name: "Test channel", online: false, playersOnline: 0 },
+      { id: 3, name: null, online: null, playersOnline: null },
+    ],
+  };
+  // Public population is supplied by the backend, never reconstructed from an incomplete channel list.
+  assert.deepEqual(validatePortalData("status", observed), observed);
+  assert.deepEqual(validatePortalData("status", { ...status, channels: [] }), { ...status, channels: [] });
+});
+
+void test("status projects safe public channel fields and rejects malformed or duplicate observations", () => {
+  const channel = { id: 1, name: null, online: true, playersOnline: 4 };
+  assert.deepEqual(validatePortalData("status", {
+    ...status, world: { id: 0, name: "Test World", internalPath: "private" },
+    channels: [{ ...channel, address: "private", port: 1234, accountIds: [7], staff: true }],
+  }), { ...status, world: { id: 0, name: "Test World" }, channels: [channel] });
+  for (const channels of [
+    [channel, channel],
+    [{ ...channel, id: 0 }],
+    [{ ...channel, id: 256 }],
+    [{ ...channel, id: 1.5 }],
+    [{ ...channel, online: "online" }],
+    [{ ...channel, playersOnline: -1 }],
+    [{ ...channel, playersOnline: "4" }],
+    [{ ...channel, playersOnline: Number.MAX_SAFE_INTEGER + 1 }],
+    [{ ...channel, name: "" }],
+    [{ ...channel, name: "Unsafe\nlabel" }],
+    [{ ...channel, name: "x".repeat(65) }],
+    Array.from({ length: 101 }, (_, index) => ({ ...channel, id: index + 1 })),
+  ]) assert.throws(() => validatePortalData("status", { ...status, channels }));
+  for (const world of [{ id: -1, name: null }, { id: 256, name: null }, { id: 0, name: " " }]) {
+    assert.throws(() => validatePortalData("status", { ...status, world }));
+  }
+});
+
+void test("channel observations inherit status freshness and malformed channels fail closed", async (t) => {
+  const originalFetch = globalThis.fetch, oldUrl = process.env.TRIXTER_READ_API_URL;
+  t.after(() => { globalThis.fetch = originalFetch; if (oldUrl === undefined) delete process.env.TRIXTER_READ_API_URL; else process.env.TRIXTER_READ_API_URL = oldUrl; });
+  process.env.TRIXTER_READ_API_URL = "https://reviewed-backend.invalid";
+  const observed = { ...status, channels: [{ id: 1, name: null, online: false, playersOnline: 0 }] };
+  globalThis.fetch = async () => Response.json({ status: "live", asOf: new Date().toISOString(), data: observed });
+  assert.deepEqual((await readPortal("/api/status")).data, observed);
+  globalThis.fetch = async () => Response.json({ status: "live", asOf: new Date(Date.now() - 180000).toISOString(), data: observed });
+  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  globalThis.fetch = async () => Response.json({ status: "live", asOf: new Date().toISOString(), data: { ...observed, channels: [observed.channels[0], observed.channels[0]] } });
+  assert.equal((await readPortal("/api/status")).status, "unavailable");
+});
+
 void test("achievement catalog requires positive milestones, unique keys and exact available AP", () => {
   assert.doesNotThrow(() => validatePortalData("achievements", achievementCatalog));
   assert.throws(() => validatePortalData("achievements", { ...achievementCatalog, totalPoints: 999999 }));
