@@ -58,16 +58,16 @@
     "Live download page displays both canonical sequence-10 downloads",
     "Independent current.json and health.txt HTTP200; health ok",
     "Game writer checkpoint ee3411c5d81b973900b105e036d0c3a513f350af verified remotely",
-    "No production configuration, database, runtime or website mutation performed"
+    "Hostinger DNS backup recorded; additive register-gateway A record applied to 46.122.17.208; no game/database/website setting or runtime mutation performed"
   ],
-  "lastUpdated": "2026-09-15T22:36:05.3174451Z",
+  "lastUpdated": "2026-09-16T00:05:00.0000000Z",
   "lane": "public-registration",
   "objective": "Open secure public website registration and verify native login",
   "worktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-open-public-registration-01a0a722",
   "state": "blocked",
-  "currentAction": "Source complete and locally tested; production access blocked by disconnected browser",
+  "currentAction": "Hostinger dashboard and DNS inspected; gateway hostname added; router ingress remains pending",
   "lastCompleted": "Gateway source and Java worker checkpoints pushed and exact remote SHAs verified",
-  "blocker": "Connected Chrome browser unavailable. Owner reports signed-in Hostinger in an unconnected browser. Production HTTPS gateway and trusted ingress not provisioned.",
+  "blocker": "No registration listener, TLS reverse proxy or trusted website ingress is active on the F: host. Hostinger DNS now maps register-gateway.trixterms.com to 46.122.17.208, but WAN TCP 443 still needs forwarding to the private proxy.",
   "filesChanged": [
     "app/api/register/route.ts",
     "components/portal/registration-form.tsx",
@@ -84,8 +84,8 @@
   "qaPort": "",
   "runtime": "F:\\TRITER MS\\single-pc-runtime",
   "publiclyDeployed": false,
-  "ownerActionRequired": "Connect the signed-in Hostinger browser tab to Codex",
-  "nextAction": "Inspect production deployment/settings after sign-in; keep registration disabled until live gates pass",
+  "ownerActionRequired": "Create one router NAT rule: TCP WAN port 443 for register-gateway.trixterms.com -> 192.168.1.84:8443; leave MariaDB and MapleStory ports unchanged",
+  "nextAction": "Provision TLS/reverse proxy on 8443, verify trusted client-IP handling and Hostinger egress, then continue production deployment",
   "gameWriterCheckpoint": "ee3411c5d81b973900b105e036d0c3a513f350af",
   "gameWriterBranch": "codex/registration-writer-01a0a722"
 }

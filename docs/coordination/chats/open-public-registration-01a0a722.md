@@ -3,7 +3,9 @@
 Status: **BLOCKED on production access/routing**, 2026-09-16.
 IMPLEMENTED=true (source); TESTED=true (local scope below); VERIFIED=false
 (production/native login); DEPLOYED=false; OWNER ACCEPTED=false.
-No production settings, game process, database or website were changed.
+No production game process, database or website settings were changed. A backed-up
+additive DNS record now points `register-gateway.trixterms.com` to the existing
+public beta host `46.122.17.208`; no listener or certificate is active yet.
 
 ## Verified source checkpoints
 
@@ -80,20 +82,20 @@ world configuration contains closedBeta.autoRegister=true. **These are not yet c
 or certified disabled**. Before opening registration, back up and explicitly disable
 both properties and launcherAuth.enabled, then verify the actual loaded policy.
 
-Hostinger sign-in through the selected project Google account showed no hosting/web apps.
-The alternate owner account required password/passkey. Owner subsequently reported
-sign-in, but the connected Chrome session still showed login and then disconnected.
-Automatic-review account-selection blocks were resolved with explicit owner approvals;
-the current blocker is the unavailable authenticated browser session. Current production
-deployment SHA/branch and private settings therefore remain unverified. Prior 7abc5c3
-production records are historical and must not be treated as current deployment evidence.
+Hostinger is now accessible in the Codex in-app browser. The account shows `trixterms.com`
+as a Next.js web app (2 of 5 web-app slots used) and no VPS. DNS was inspected and backed
+up: apex ALIAS and `www` CNAME remain on Hostinger CDN, while `register-gateway` was added
+as an A record to `46.122.17.208` with TTL 300. The F: host has public game forwarding,
+but no registration listener, reverse proxy or TLS certificate. Current production
+deployment settings still require readback before activation.
 
 ## Exact next actions
 
-1. Connect the signed-in Hostinger browser; inspect actual current production SHA/branch,
-   environment setting names and existing gateway/routing capability without exposing secrets.
-2. Confirm an authorized authenticated HTTPS route to the beta PC and trusted website
-   ingress. Keep both switches off until route, identity and abuse controls pass live checks.
+1. Owner action: create one router NAT rule forwarding TCP WAN port 443 for
+   `register-gateway.trixterms.com` to `192.168.1.84:8443`. Do not change database or
+   MapleStory game-port rules. Keep registration disabled until this is verified.
+2. Provision TLS/reverse proxy on 8443, verify trusted client-IP handling and Hostinger
+   egress, then inspect current production SHA/branch and environment setting names.
 3. Preserve configuration rollback, provision the additive limiter table and least-privilege
    writer on the confirmed database, compile/stage the matching worker, supervise gateway,
    and disable alternate public writers. Never move the game DB onto the public web host.
