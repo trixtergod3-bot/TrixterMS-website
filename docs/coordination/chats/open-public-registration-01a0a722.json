@@ -67,7 +67,7 @@
   "state": "blocked",
   "currentAction": "Hostinger dashboard and DNS inspected; gateway hostname added; router ingress remains pending",
   "lastCompleted": "Gateway source and Java worker checkpoints pushed and exact remote SHAs verified",
-  "blocker": "No registration listener, TLS reverse proxy or trusted website ingress is active on the F: host. Hostinger DNS now maps register-gateway.trixterms.com to 46.122.17.208, but WAN TCP 443 still needs forwarding to the private proxy.",
+  "blocker": "No registration listener, TLS reverse proxy or trusted website ingress is active on the F: host. Hostinger DNS maps register-gateway.trixterms.com to 46.122.17.208; WAN TCP 443 answers but local 8443 is closed and TLS fails, indicating a conflicting or incomplete router mapping.",
   "filesChanged": [
     "app/api/register/route.ts",
     "components/portal/registration-form.tsx",
@@ -84,7 +84,7 @@
   "qaPort": "",
   "runtime": "F:\\TRITER MS\\single-pc-runtime",
   "publiclyDeployed": false,
-  "ownerActionRequired": "Create one router NAT rule: TCP WAN port 443 for register-gateway.trixterms.com -> 192.168.1.84:8443; leave MariaDB and MapleStory ports unchanged",
+  "ownerActionRequired": "In the router, set WAN TCP 443 for register-gateway.trixterms.com -> 192.168.1.84:8443 and remove any conflicting WAN-443 mapping; leave MariaDB and MapleStory ports unchanged",
   "nextAction": "Provision TLS/reverse proxy on 8443, verify trusted client-IP handling and Hostinger egress, then continue production deployment",
   "gameWriterCheckpoint": "ee3411c5d81b973900b105e036d0c3a513f350af",
   "gameWriterBranch": "codex/registration-writer-01a0a722"

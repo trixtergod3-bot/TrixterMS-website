@@ -86,14 +86,16 @@ Hostinger is now accessible in the Codex in-app browser. The account shows `trix
 as a Next.js web app (2 of 5 web-app slots used) and no VPS. DNS was inspected and backed
 up: apex ALIAS and `www` CNAME remain on Hostinger CDN, while `register-gateway` was added
 as an A record to `46.122.17.208` with TTL 300. The F: host has public game forwarding,
-but no registration listener, reverse proxy or TLS certificate. Current production
-deployment settings still require readback before activation.
+but no registration listener, reverse proxy or TLS certificate. WAN TCP 443 currently
+answers while local 8443 is closed and the TLS handshake fails, indicating a conflicting
+or incomplete router mapping. Current production deployment settings still require
+readback before activation.
 
 ## Exact next actions
 
-1. Owner action: create one router NAT rule forwarding TCP WAN port 443 for
-   `register-gateway.trixterms.com` to `192.168.1.84:8443`. Do not change database or
-   MapleStory game-port rules. Keep registration disabled until this is verified.
+1. Owner action: in the router, set WAN TCP port 443 for `register-gateway.trixterms.com`
+   to `192.168.1.84:8443` and remove any conflicting WAN-443 mapping. Do not change
+   database or MapleStory game-port rules. Keep registration disabled until verified.
 2. Provision TLS/reverse proxy on 8443, verify trusted client-IP handling and Hostinger
    egress, then inspect current production SHA/branch and environment setting names.
 3. Preserve configuration rollback, provision the additive limiter table and least-privilege
