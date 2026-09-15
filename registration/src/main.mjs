@@ -18,7 +18,8 @@ try {
   await verifyWriterBoundary(pool, env.REGISTRATION_DB_NAME);
   await verifySchema(pool);
   const server = createRegistrationServer({ token: env.REGISTRATION_GATEWAY_TOKEN,
-    enabled: () => env.REGISTRATION_ENABLED === 'true', store: accountStore(pool, env.REGISTRATION_RATE_SECRET, javaWriter(env)),
+    enabled: () => env.REGISTRATION_ENABLED === 'true',
+    store: accountStore(pool, env.REGISTRATION_RATE_SECRET, javaWriter({ ...env, REGISTRATION_DB_PORT: '3306' })),
     log: event => console.info(JSON.stringify(event)) });
   server.on('error', () => { console.error('Registration listener unavailable'); process.exit(1); });
   server.listen(4317, '127.0.0.1');
