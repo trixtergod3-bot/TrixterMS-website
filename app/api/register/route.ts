@@ -3,3 +3,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const GET = (request: Request) => handleRegistrationRequest(request);
 export const POST = (request: Request) => handleRegistrationRequest(request);
+export const PUT = (request: Request) => handleRegistrationRequest(request);
+export const PATCH = (request: Request) => handleRegistrationRequest(request);
+export const DELETE = (request: Request) => handleRegistrationRequest(request);
+export const HEAD = (request: Request) => handleRegistrationRequest(request);
+export const OPTIONS = (request: Request) => handleRegistrationRequest(request);
