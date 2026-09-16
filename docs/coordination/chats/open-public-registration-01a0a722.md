@@ -1,11 +1,15 @@
 # Open public registration safely
 
-Status: **BLOCKED on production access/routing**, 2026-09-16.
+Status: **BLOCKED on Hostinger Git provider authorization**, 2026-09-16.
 IMPLEMENTED=true (source); TESTED=true (local scope below); VERIFIED=false
 (production/native login); DEPLOYED=false; OWNER ACCEPTED=false.
-No production game process, database or website settings were changed. A backed-up
-additive DNS record now points `register-gateway.trixterms.com` to the existing
-public beta host `46.122.17.208`; no listener or certificate is active yet.
+No registration account was created and registration remains disabled. A backed-up
+additive DNS record points `register-gateway.trixterms.com` to the existing public beta
+host `46.122.17.208`; the router now forwards WAN TCP 443 to `192.168.1.84:8443`.
+The loopback gateway, least-privilege DB writer, additive limiter table, Java worker,
+and Caddy TLS proxy are staged on the F: runtime. The public hostname has a valid
+certificate and `/api/register` reaches the disabled gateway (503); other paths are
+404. No website production deployment or secret was changed.
 
 ## Verified source checkpoints
 
@@ -82,22 +86,20 @@ world configuration contains closedBeta.autoRegister=true. **These are not yet c
 or certified disabled**. Before opening registration, back up and explicitly disable
 both properties and launcherAuth.enabled, then verify the actual loaded policy.
 
-Hostinger is now accessible in the Codex in-app browser. The account shows `trixterms.com`
-as a Next.js web app (2 of 5 web-app slots used) and no VPS. DNS was inspected and backed
-up: apex ALIAS and `www` CNAME remain on Hostinger CDN, while `register-gateway` was added
-as an A record to `46.122.17.208` with TTL 300. The F: host has public game forwarding,
-but no registration listener, reverse proxy or TLS certificate. WAN TCP 443 currently
-answers while local 8443 is closed and the TLS handshake fails, indicating a conflicting
-or incomplete router mapping. Current production deployment settings still require
-readback before activation.
+Hostinger is accessible in the Codex in-app browser. The account shows `trixterms.com`
+as a Next.js web app (2 of 5 web-app slots used) and no VPS. The dashboard still reports
+**Git provider is not connected**; its environment-variable controls are disabled until
+the provider is connected. The Connect GitHub action did not open an authorization flow
+in the in-app browser, so the reviewed website branch cannot yet be deployed and the
+production secrets cannot be entered there. This is the sole current blocker.
 
 ## Exact next actions
 
-1. Owner action: in the router, set WAN TCP port 443 for `register-gateway.trixterms.com`
-   to `192.168.1.84:8443` and remove any conflicting WAN-443 mapping. Do not change
-   database or MapleStory game-port rules. Keep registration disabled until verified.
-2. Provision TLS/reverse proxy on 8443, verify trusted client-IP handling and Hostinger
-   egress, then inspect current production SHA/branch and environment setting names.
+1. Owner action: in Hostinger, choose **Connect Git provider -> Connect GitHub** for
+   `trixterms.com` and authorize only the intended TrixterMS website repository. Return
+   to the deployment dashboard when the repository is shown.
+2. Deploy the reviewed website branch, configure secrets only in Hostinger environment
+   settings, and verify the trusted client-IP ingress contract.
 3. Preserve configuration rollback, provision the additive limiter table and least-privilege
    writer on the confirmed database, compile/stage the matching worker, supervise gateway,
    and disable alternate public writers. Never move the game DB onto the public web host.

@@ -28,16 +28,16 @@
     "server/src/handling/login/RegistrationGatewayWriter.java"
   ],
   "dependencies": [
-    "Hostinger production account access",
-    "Verified HTTPS gateway route and trusted client-IP ingress"
+    "Hostinger Git provider authorization and production deployment access",
+    "Verified website trusted client-IP ingress"
   ],
   "collisionRisks": [
     "Before deployment re-read live Hostinger SHA and newest website main; preserve working sequence-10 downloads and independent feed",
     "Do not replace shared game JAR from dirty Documents checkout; gateway uses separately compiled worker classes"
   ],
   "remainingWork": [
-    "Authenticate Hostinger and inspect current production SHA/settings",
-    "Configure verified HTTPS/private gateway routing and trusted edge identity",
+    "Authorize Hostinger GitHub connection and deploy the reviewed website branch",
+    "Verify Hostinger trusted client-IP ingress before enabling the website route",
     "Provision limited writer and additive rate table; back up production configuration",
     "Deploy service and set explicit alternate-writer disabled flags; verify effective runtime policy",
     "Deploy matching website preserving downloads and independent patch feed",
@@ -58,16 +58,17 @@
     "Live download page displays both canonical sequence-10 downloads",
     "Independent current.json and health.txt HTTP200; health ok",
     "Game writer checkpoint ee3411c5d81b973900b105e036d0c3a513f350af verified remotely",
-    "Hostinger DNS backup recorded; additive register-gateway A record applied to 46.122.17.208; no game/database/website setting or runtime mutation performed"
+    "Hostinger DNS backup recorded; additive register-gateway A record and router forwarding applied; runtime backup, least-privilege DB writer, loopback gateway and Caddy TLS proxy staged with registration disabled",
+    "Public gateway hostname reaches TLS proxy; /api/register returns kill-switch 503 and other paths 404"
   ],
-  "lastUpdated": "2026-09-16T00:05:00.0000000Z",
+  "lastUpdated": "2026-09-16T02:20:00.0000000Z",
   "lane": "public-registration",
   "objective": "Open secure public website registration and verify native login",
   "worktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-open-public-registration-01a0a722",
   "state": "blocked",
-  "currentAction": "Hostinger dashboard and DNS inspected; gateway hostname added; router ingress remains pending",
+  "currentAction": "Gateway and TLS proxy staged safely; Hostinger dashboard still reports Git provider not connected",
   "lastCompleted": "Gateway source and Java worker checkpoints pushed and exact remote SHAs verified",
-  "blocker": "No registration listener, TLS reverse proxy or trusted website ingress is active on the F: host. Hostinger DNS maps register-gateway.trixterms.com to 46.122.17.208; WAN TCP 443 answers but local 8443 is closed and TLS fails, indicating a conflicting or incomplete router mapping.",
+  "blocker": "Hostinger is signed in through delegated admin access but Git provider remains disconnected; the Connect GitHub action did not open an authorization flow in the in-app browser. Website deployment and production environment variables cannot proceed until the owner authorizes the repository connection. Registration remains disabled.",
   "filesChanged": [
     "app/api/register/route.ts",
     "components/portal/registration-form.tsx",
@@ -84,8 +85,8 @@
   "qaPort": "",
   "runtime": "F:\\TRITER MS\\single-pc-runtime",
   "publiclyDeployed": false,
-  "ownerActionRequired": "In the router, set WAN TCP 443 for register-gateway.trixterms.com -> 192.168.1.84:8443 and remove any conflicting WAN-443 mapping; leave MariaDB and MapleStory ports unchanged",
-  "nextAction": "Provision TLS/reverse proxy on 8443, verify trusted client-IP handling and Hostinger egress, then continue production deployment",
+  "ownerActionRequired": "In Hostinger, choose Connect Git provider -> Connect GitHub for trixterms.com and authorize access to the intended TrixterMS website repository, then return to the deployment dashboard",
+  "nextAction": "After GitHub authorization, deploy the reviewed website branch, configure secrets only in Hostinger environment settings, verify trusted ingress, then run controlled registration and native LOGIN_PASSWORD QA",
   "gameWriterCheckpoint": "ee3411c5d81b973900b105e036d0c3a513f350af",
   "gameWriterBranch": "codex/registration-writer-01a0a722"
 }
