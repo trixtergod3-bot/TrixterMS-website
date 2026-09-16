@@ -3,15 +3,16 @@ import { isIP } from 'node:net';
 import { getSiteConfig } from '../site-config.ts';
 type Environment = Record<string, string | undefined>;
 export type RegistrationCode = 'ACCOUNT_CREATED' | 'INVALID_REGISTRATION' | 'USERNAME_TAKEN'
-  | 'RATE_LIMITED' | 'REGISTRATION_UNAVAILABLE' | 'REQUEST_REJECTED';
-interface RegistrationInput { username: string; password: string; passwordConfirmation: string; website: string }
+  | 'RATE_LIMITED' | 'REGISTRATION_UNAVAILABLE';
+interface RegistrationInput { username: string; password: string; passwordConfirmation: string }
 export function validateRegistration(value: unknown): RegistrationInput | null {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
   const input = value as Record<string, unknown>;
-  if (Object.keys(input).some((key) => !['username', 'password', 'passwordConfirmation', 'website'].includes(key))
+  if (Object.keys(input).length !== 3
+    || Object.keys(input).some((key) => !['username', 'password', 'passwordConfirmation'].includes(key))
     || typeof input.username !== 'string' || !/^[A-Za-z0-9]{4,13}$/.test(input.username)
     || typeof input.password !== 'string' || !/^[\x21-\x7e]{8,32}$/.test(input.password)
-    || input.passwordConfirmation !== input.password || input.website !== '') return null;
+    || input.passwordConfirmation !== input.password) return null;
   return input as unknown as RegistrationInput;
 }
 function configuration(env: Environment) {
@@ -92,12 +93,12 @@ interface Dependencies { fetch?: typeof fetch; now?: () => number; limiter?: Reg
 /** Same-origin gateway: no database access, credential persistence/logging, or login token. */
 export async function handleRegistrationRequest(request: Request, env: Environment = process.env,
   dependencies: Dependencies = {}): Promise<Response> {
-  if (!['GET', 'POST'].includes(request.method)) return response(405, 'REQUEST_REJECTED', { Allow: 'GET, POST' });
+  if (!['GET', 'POST'].includes(request.method)) return response(400, 'INVALID_REGISTRATION');
   const config = configuration(env);
   if (!config) return response(503, 'REGISTRATION_UNAVAILABLE');
   const origin = request.headers.get('origin'); const fetchSite = request.headers.get('sec-fetch-site');
   if ((origin !== null && origin !== config.origin) || (request.method === 'POST' && origin !== config.origin)
-    || (fetchSite !== null && !['same-origin', 'none'].includes(fetchSite))) return response(403, 'REQUEST_REJECTED');
+    || (fetchSite !== null && !['same-origin', 'none'].includes(fetchSite))) return response(400, 'INVALID_REGISTRATION');
   let clientAddress = '127.0.0.1';
   if (config.production) {
     const edgeSecret = request.headers.get('x-trixter-edge-token') ?? '';
@@ -116,11 +117,12 @@ export async function handleRegistrationRequest(request: Request, env: Environme
       'Set-Cookie': `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=1800${config.secure ? '; Secure' : ''}` } });
   }
   if (!limits.consume(`request:${sourceKey}`, 5, 60 * 60_000, now)) return response(429, 'RATE_LIMITED', { 'Retry-After': '3600' });
-  if ((request.headers.get('content-type') ?? '').toLowerCase().split(';')[0].trim() !== 'application/json'
+  if (request.headers.has('content-encoding')
+    || (request.headers.get('content-type') ?? '').toLowerCase().split(';')[0].trim() !== 'application/json'
     || Number(request.headers.get('content-length') ?? '0') > maximumBodyBytes) return response(400, 'INVALID_REGISTRATION');
   const cookie = (request.headers.get('cookie') ?? '').split(';').map((part) => part.trim())
     .find((part) => part.startsWith(`${cookieName}=`))?.slice(cookieName.length + 1) ?? '';
-  if (!validCsrf(request.headers.get('x-csrf-token') ?? '', cookie, config.csrfSecret, now)) return response(403, 'REQUEST_REJECTED');
+  if (!validCsrf(request.headers.get('x-csrf-token') ?? '', cookie, config.csrfSecret, now)) return response(400, 'INVALID_REGISTRATION');
   let input: RegistrationInput | null;
   try { input = validateRegistration(await readBoundedJson(request.body)); }
   catch { return response(400, 'INVALID_REGISTRATION'); }
