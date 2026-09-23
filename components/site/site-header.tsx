@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ArrowUpRight, Sparkles, Menu, X } from 'lucide-react';
 
-const navigation = [['/', 'Home'], ['/download', 'Download'], ['/rankings', 'Ranking'], ['/achievements', 'Achievements'], ['/database', 'Database'], ['/free-market', 'Free Market'], ['/features', 'Features']] as const;
+const navigation = [['/', 'Home'], ['/download', 'Downloads'], ['/rankings', 'Ranking'], ['/achievements', 'Achievements'], ['/database', 'Database'], ['/free-market', 'Free Market'], ['/features', 'Features']] as const;
 const more = [['/register', 'Register'], ['/classes', 'Classes'], ['/news', 'News'], ['/events', 'Events'], ['/rankings/daily', 'Daily rankings'], ['/rankings/weekly', 'Weekly rankings'], ['/vote', 'Vote'], ['/donate', 'Donate'], ['/discord', 'Discord'], ['/status', 'Server status'], ['/guide', 'Getting started']] as const;
 export function SiteHeader() {
   const pathname = usePathname();
