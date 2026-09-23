@@ -16,14 +16,14 @@ function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: stri
 export default async function DownloadPage() {
   const downloads = await getReleaseDownloads();
   return <main>
-    <PageHero eyebrow="TRIXTERMS · GMS v111.1" title="Your next adventure."
-      description="Get the game, create your account, and make your mark on TRIXTERMS."
+    <PageHero eyebrow="TRIXTERMS · GMS v111.1" title="Download TRIXTERMS."
+      description="Create an account, download the launcher, and begin through MapleStory’s native sign-in screen."
       aside={<div className="hero-stat"><Gamepad2 aria-hidden="true" /><strong>Windows</strong><span>native game client</span></div>} />
     <section className="shell portal-section" aria-labelledby="download-title">
       <div className="section-heading"><div><span className="eyebrow">Download center</span><h2 id="download-title">Get TRIXTERMS</h2></div>
         <Link className="button button-secondary" href="/patch-notes">Patch notes</Link></div>
       {downloads ? <>
-        <p>Published beta · Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion}</p>
+        <p>Published beta · Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion} · Native account login</p>
         <div className="portal-grid">
 
           {downloads.launcher && <Artifact artifact={downloads.launcher} title="Launcher" />}
@@ -31,14 +31,14 @@ export default async function DownloadPage() {
         </div>
         {downloads.manifest && <details><summary>Release verification details</summary><p><a href={downloads.manifest.url} rel="noopener noreferrer">Release manifest</a> · sequence {downloads.manifest.sequence}. The launcher authenticates the signed manifest and verifies managed files before applying updates.</p></details>}
       </> : <div className="portal-panel"><span className="eyebrow">Release preparation</span>
-        <h3>The next journey is getting ready.</h3><p>Beta downloads will appear here when the client and launcher are published. Current release version and patch status are awaiting publication.</p>
+        <h3>The next journey is getting ready.</h3><p>The official launcher and full client will appear here only after their published hashes and release manifest are verified. Registration can open independently once its protected account gateway is live.</p>
         <span className="button button-disabled" aria-disabled="true">Downloads coming soon</span>
         <p>Follow release announcements for availability.</p><Link href="/discord">Visit the community page</Link></div>}
     </section>
     <section className="shell portal-section" aria-labelledby="installation-title">
       <div className="section-heading"><div><span className="eyebrow">Three steps to play</span><h2 id="installation-title">A fresh start.</h2></div></div>
       <div className="portal-grid portal-grid-three">
-        <article className="portal-panel"><span className="section-index">01</span><h3>Create your account</h3><p>Register your account ID and password through the registration page when it opens.</p><Link href="/register">Account registration</Link></article>
+        <article className="portal-panel"><span className="section-index">01</span><h3>Create your account</h3><p>Register one account ID and password. Those exact credentials are used on the native MapleStory sign-in screen.</p><Link href="/register">Open registration</Link></article>
         <article className="portal-panel"><span className="section-index">02</span>
           <h3>{downloads?.launcher ? 'Install with the launcher' : 'Install the game'}</h3>
           {downloads?.fullClient && !downloads.launcher ? <p>Download the full client and extract the entire archive into a writable folder. Keep its files together. If you download the launcher separately, place it in that same folder.</p>
