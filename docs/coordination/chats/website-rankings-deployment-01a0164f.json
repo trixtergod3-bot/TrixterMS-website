@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a0164f-e18f-73e3-824b-1b04b5e42924",
+  "chatSlug": "website-rankings-deployment-01a0164f",
+  "chatTitle": "Deploy telemetry rankings to the website",
+  "task": "Deploy the tested telemetry, NX, class-filtered rankings release to trixterms.com and verify it publicly.",
+  "status": "BLOCKED",
+  "localWorktree": "F:/CodexWorktrees/website-telemetry-rankings-v1/TrixterMS-website",
+  "branch": "codex/website-rankings-production-deploy",
+  "localHead": "037a8f839e0a2a324b30af38cc43a31a632c8658",
+  "publicationBranch": "main",
+  "latestCommit": "037a8f839e0a2a324b30af38cc43a31a632c8658",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": false,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "telemetry rankings bridge and public DTOs",
+    "rankings page and live polling controls",
+    "production merge compatibility in lib/portal/data.ts",
+    "production release documentation"
+  ],
+  "dependencies": [
+    "Authenticated Hostinger hPanel access",
+    "Existing Node.js app/route that serves trixterms.com",
+    "Reviewed HTTPS read bridge and its server-only token",
+    "Preserved existing /beta patch route"
+  ],
+  "collisionRisks": [
+    "Current Hostinger-hosted page is not automatically deployed from GitHub main.",
+    "The existing /beta patch route must remain intact during any hosting change.",
+    "Live rankings must stay unavailable until the authenticated read bridge is configured."
+  ],
+  "remainingWork": [
+    "Authenticate to Hostinger and identify the existing Node deployment target without changing its patch routing.",
+    "Configure the server-only read bridge URL/token and launch its restricted reader service.",
+    "Deploy GitHub main commit 037a8f839e0a2a324b30af38cc43a31a632c8658 and verify the public rankings controls and live data response."
+  ],
+  "ownerQa": [
+    "After deployment, open https://trixterms.com/rankings and confirm the rankings selector includes NX Credit, NX Prepaid, current/lifetime mesos, lifetime EXP, level and fame."
+  ],
+  "sourceCoverage": "The pushed main release merges the telemetry rankings release with the concurrent production registration/download release. No game client, server runtime, database, patch payload, or hosting configuration was changed.",
+  "evidence": [
+    "GitHub main was pushed and read back at 037a8f839e0a2a324b30af38cc43a31a632c8658.",
+    "93 website tests, 40 bridge tests and 4 registration-service tests passed; lint, typecheck, production build and security scan passed.",
+    "Local production smoke at 127.0.0.1:4316 rendered the rankings page with NX Credit and class-filter controls.",
+    "Public trixterms.com/rankings still rendered the old Level/Fame-only form and unavailable data after the main push.",
+    "Hostinger redirected to its unauthenticated login page; no safe non-interactive hosting deployment configuration was found."
+  ],
+  "lastUpdated": "2026-09-26T06:45:00+02:00",
+  "lane": "website-production",
+  "objective": "Deploy telemetry rankings to the live website and verify them publicly.",
+  "worktree": "F:/CodexWorktrees/website-telemetry-rankings-v1/TrixterMS-website",
+  "state": "blocked",
+  "currentAction": "Source is published; public hosting deployment is blocked on an authenticated Hostinger session and the read-bridge configuration.",
+  "lastCompleted": "Merged current production website work, ran all release checks, pushed main, and verified that the live site has not redeployed.",
+  "blocker": "Hostinger requires an owner-authenticated session. Existing local credentials are only for the registration gateway or local database and cannot safely deploy the website. The public site is not connected to GitHub main.",
+  "filesChanged": [
+    "website source merge and deployment handoff"
+  ],
+  "qaClient": "",
+  "qaLauncher": "",
+  "qaPort": "4316",
+  "runtime": "Local production preview only; public Hostinger runtime unchanged",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "Sign in to Hostinger in the Trixter Chrome profile and leave the hPanel session active. Do not change the existing /beta patch route.",
+  "nextAction": "Use the authenticated Hostinger session to deploy the published main commit and configure the reviewed read bridge, then rerun public browser/API verification."
+}
