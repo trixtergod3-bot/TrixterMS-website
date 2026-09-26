@@ -1,6 +1,6 @@
 # TrixterMS portal public read API
 
-**RC1 update:** [Rankings and Telemetry RC1](WEBSITE_TELEMETRY_RC1.md) supersedes this document's earlier rankings/status caching and failure behavior. It defines the four `/api/public/` endpoints, bounded server caching and explicit stale snapshots. The legacy competition, achievement and other endpoint sections below remain historical contracts; they do not imply those services are activated.
+**V2 update:** [Website telemetry rankings V2](WEBSITE_TELEMETRY_RANKINGS_V2.md) supersedes this document's overall-ranking eligibility, sorts, class filters and NX handling. [Rankings and Telemetry RC1](WEBSITE_TELEMETRY_RC1.md) remains authoritative for the shared cache/runtime failure behavior. The legacy competition, achievement and other endpoint sections below remain historical contracts; they do not imply those services are activated.
 
 This is the beta portal boundary and a backend implementation contract. The portal does not connect to MariaDB. A missing backend produces an unavailable state and no fabricated character, population, price, or score. This document records source inspection on 2026-09-12; it is not verification of the live beta database or runtime.
 

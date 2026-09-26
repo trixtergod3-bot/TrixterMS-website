@@ -1,6 +1,8 @@
 const ownGrants = "REPLACE(GRANTEE, CHAR(39), '') = CURRENT_USER()";
-const view = 'trixter_public_characters_v1';
-const expectedColumns = ['internalId', 'world', 'name', 'level', 'exp', 'jobId', 'fame', 'guildName', 'isDemonAvenger'];
+const view = 'trixter_public_rankings_v2';
+const expectedColumns = ['internalId', 'world', 'name', 'level', 'exp', 'jobId', 'fame', 'guildName',
+  'isDemonAvenger', 'currentMesos', 'expEarned', 'mesosEarned', 'currentNx', 'nxEarned',
+  'nxCreditEarned', 'nxPrepaidEarned'];
 
 function rejected() { throw new Error('Public reader boundary validation failed'); }
 
@@ -40,6 +42,7 @@ export async function verifyReaderBoundary(pool, database) {
     'SELECT id FROM characters WHERE 1 = 0',
     'SELECT characterid FROM queststatus WHERE 1 = 0',
     'SELECT id FROM accounts WHERE 1 = 0',
+    'SELECT character_id FROM trixter_telemetry_character_counters WHERE 1 = 0',
   ]) {
     let denied = false;
     try { await query(sql); }

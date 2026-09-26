@@ -13,5 +13,7 @@ export function SectionHeading({eyebrow,title,href,label}:{eyebrow:string;title:
 export const metricLabels: Record<string,string> = {
  'combat.mobs_killed':'Mobs defeated','combat.bosses_killed':'Bosses defeated','combat.unique_bosses_killed':'Unique bosses','combat.deaths':'Deaths',
  'progress.exp_earned':'EXP earned','economy.mesos_earned':'Mesos earned','economy.mesos_spent':'Mesos spent','economy.nx_earned':'NX earned','economy.nx_spent':'NX spent','items.cubes_found':'Cubes found','items.cubes_spent':'Cubes used','items.glasses_spent':'Glasses used'
+ ,'fishing.rolls_completed':'Fishing rolls','fishing.successful_catches':'Fish caught','fishing.missed_rolls':'Fishing misses','fishing.inventory_blocked_rolls':'Inventory-blocked fishing rolls','fishing.exchanges_completed':'Fishing exchanges','fishing.fish_spent':'Fish exchanged','fishing.miracle_cubes_earned':'Fishing Miracle Cubes'
+ ,'slayer.credited_kills':'Slayer credited kills','slayer.contracts_completed':'Slayer contracts','slayer.marks_earned':'Slayer Marks earned','slayer.marks_spent':'Slayer Marks spent','slayer.rerolls':'Slayer rerolls','slayer.ultimate_activations':'Ultimate Slayer activations','slayer.exp_purchased':'Slayer EXP purchased','slayer.levels_purchased':'Slayer levels purchased'
 };
 export function displayCount(value:string|number|null|undefined) { if(value===null||value===undefined)return '—'; try{return BigInt(value).toLocaleString('en-US')}catch{return '—'} }

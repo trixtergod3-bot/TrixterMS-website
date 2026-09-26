@@ -3,9 +3,12 @@ import test from 'node:test';
 import { portalRequest, validatePortalData } from '../lib/portal/data.ts';
 import { createPublicReader } from '../lib/portal/public-data.ts';
 import { inspectText, inspectPublicationPath } from '../tools/check-security.mjs';
+import { PUBLIC_CLASS_FILTERS } from '../bridge/src/jobs.mjs';
+import { RANKING_SORTS } from '../bridge/src/rankings.mjs';
+import { RANKING_CLASS_OPTIONS, RANKING_SORT_OPTIONS } from '../lib/portal/ranking-options.ts';
 
 const row = { rank: 1, name: 'NewLevelOne', level: 1, exp: '0', jobId: 0, jobName: 'Beginner', fame: 0, guildName: null, score: null };
-const data = { entries: [row], total: 1, page: 1, pageSize: 50 };
+const data = { sort: 'level', entries: [row], total: 1, page: 1, pageSize: 50 };
 
 void test('rankings require complete metadata and include level one with exact persisted EXP', () => {
   assert.deepEqual(validatePortalData('rankings', data), data);
@@ -13,14 +16,22 @@ void test('rankings require complete metadata and include level one with exact p
   assert.throws(() => validatePortalData('rankings', { ...data, entries: [{ ...row, name: 'bad\nname' }] }));
   for (const exp of [1, '-1', '01', '9223372036854775808']) assert.throws(() => validatePortalData('rankings', { ...data, entries: [{ ...row, exp }] }));
   for (const changed of [{ page: 0 }, { pageSize: 101 }, { total: null }, { total: 2 }, { page: 2 }, { entries: [{ ...row, rank: 2 }] }, { entries: [{ ...row, guildName: 'x'.repeat(46) }] }]) assert.throws(() => validatePortalData('rankings', { ...data, ...changed }));
-  assert.deepEqual(validatePortalData('rankings', { entries: [], total: 0, page: 1, pageSize: 50 }), { entries: [], total: 0, page: 1, pageSize: 50 });
-  assert.doesNotThrow(() => validatePortalData('rankings', { entries: [], total: 1, page: 2, pageSize: 50 }));
+  assert.deepEqual(validatePortalData('rankings', { sort: 'level', entries: [], total: 0, page: 1, pageSize: 50 }), { sort: 'level', entries: [], total: 0, page: 1, pageSize: 50 });
+  assert.doesNotThrow(() => validatePortalData('rankings', { sort: 'level', entries: [], total: 1, page: 2, pageSize: 50 }));
 });
 
 void test('class filters preserve carrier distinction without changing numeric jobs', () => {
   assert.equal(portalRequest('/api/rankings', { class: 'demon-avenger' }).query.get('class'), 'demon-avenger');
   assert.equal(portalRequest('/api/rankings', { class: 'paladin' }).query.get('class'), 'paladin');
+  assert.equal(portalRequest('/api/rankings', { class: 'phantom' }).query.get('class'), 'phantom');
+  assert.equal(portalRequest('/api/rankings', { sort: 'nx-credit-earned' }).query.get('sort'), 'nx-credit-earned');
   for (const query of [{ class: 'paladin', job: 122 }, { class: 'unknown' }, { world: 256 }, { job: 100000 }]) assert.throws(() => portalRequest('/api/rankings', query));
+});
+
+void test('browser and bridge ranking allowlists cannot drift independently', () => {
+  assert.deepEqual(RANKING_SORT_OPTIONS.map((option) => option.value), RANKING_SORTS);
+  assert.deepEqual(RANKING_CLASS_OPTIONS.map((option) => [option.value, option.label, [...option.jobIds]]),
+    PUBLIC_CLASS_FILTERS.map((option) => [option.key, option.label, [...option.jobIds]]));
 });
 
 void test('authenticated reader bounds freshness and rejects wrong pages and classes', async (t) => {

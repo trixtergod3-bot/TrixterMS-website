@@ -1,4 +1,19 @@
-import { DA_CARRIER_JOBS, resolveJobName } from './jobs.mjs';
+import { DA_CARRIER_JOBS, isPublicClassFilter, matchesPublicClass, resolveJobName } from './jobs.mjs';
+
+export const RANKING_SORTS = Object.freeze([
+  'level', 'fame', 'exp-earned', 'current-mesos', 'mesos-earned',
+  'current-nx', 'nx-earned', 'nx-credit-earned', 'nx-prepaid-earned',
+]);
+
+const scoreFields = Object.freeze({
+  'exp-earned': 'expEarned',
+  'current-mesos': 'currentMesos',
+  'mesos-earned': 'mesosEarned',
+  'current-nx': 'currentNx',
+  'nx-earned': 'nxEarned',
+  'nx-credit-earned': 'nxCreditEarned',
+  'nx-prepaid-earned': 'nxPrepaidEarned',
+});
 
 export class UnavailableError extends Error {
   constructor() { super('Rankings unavailable'); }
@@ -21,6 +36,16 @@ function publicText(value, maxLength) {
   return value;
 }
 
+function publicDecimal(value, { nullable = false } = {}) {
+  if (nullable && value === null) return null;
+  const result = String(value);
+  if (typeof value === 'number' && !Number.isSafeInteger(value)) throw new UnavailableError();
+  if (!/^(0|[1-9][0-9]{0,18})$/u.test(result) || BigInt(result) > 9_223_372_036_854_775_807n) {
+    throw new UnavailableError();
+  }
+  return result;
+}
+
 export function projectSourceRow(row) {
   // Construct every field explicitly: unexpected columns can never leave the bridge.
   if (!row || typeof row !== 'object') throw new UnavailableError();
@@ -28,11 +53,7 @@ export function projectSourceRow(row) {
   const marker = row.isDemonAvenger === true || row.isDemonAvenger === 1 ||
     row.isDemonAvenger === 1n || row.isDemonAvenger === '1';
   const isDemonAvenger = marker && DA_CARRIER_JOBS.includes(jobId);
-  const exp = String(row.exp);
-  if (typeof row.exp === 'number' && !Number.isSafeInteger(row.exp)) throw new UnavailableError();
-  if (!/^(0|[1-9][0-9]{0,18})$/u.test(exp) || BigInt(exp) > 9_223_372_036_854_775_807n) {
-    throw new UnavailableError();
-  }
+  const exp = publicDecimal(row.exp);
   return Object.freeze({
     internalId: boundedInteger(row.internalId, 1, 2_147_483_647),
     world: boundedInteger(row.world, 0, 127),
@@ -44,6 +65,13 @@ export function projectSourceRow(row) {
     fame: boundedInteger(row.fame, -2_147_483_648, 2_147_483_647),
     guildName: row.guildName === null || row.guildName === '' ? null : publicText(row.guildName, 45),
     isDemonAvenger,
+    currentMesos: publicDecimal(row.currentMesos),
+    expEarned: publicDecimal(row.expEarned),
+    mesosEarned: publicDecimal(row.mesosEarned),
+    currentNx: publicDecimal(row.currentNx, { nullable: true }),
+    nxEarned: publicDecimal(row.nxEarned),
+    nxCreditEarned: publicDecimal(row.nxCreditEarned),
+    nxPrepaidEarned: publicDecimal(row.nxPrepaidEarned),
   });
 }
 
@@ -68,12 +96,20 @@ export function createSnapshot(rows, asOf, { maxRows, maxBytes }) {
   });
   const level = Object.freeze(projected.sort(compareProgress));
   const fame = Object.freeze([...level].sort((a, b) => b.fame - a.fame || compareProgress(a, b)));
+  const rankings = { level, fame };
+  for (const [sort, field] of Object.entries(scoreFields)) {
+    const eligible = sort === 'current-nx' ? level.filter((row) => row.currentNx !== null) : [...level];
+    rankings[sort] = Object.freeze(eligible.sort((a, b) => {
+      const first = BigInt(a[field]), second = BigInt(b[field]);
+      return first === second ? compareProgress(a, b) : first > second ? -1 : 1;
+    }));
+  }
   const counts = new Map();
   for (const row of level) counts.set(row.jobName, (counts.get(row.jobName) ?? 0) + 1);
   const classDistribution = Object.freeze([...counts.entries()]
     .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
     .map(([jobName, count]) => Object.freeze({ jobName, count })));
-  return Object.freeze({ status: 'live', asOf, level, fame,
+  return Object.freeze({ status: 'live', asOf, ...rankings,
     stats: Object.freeze({ totalCharacters: level.length, classDistribution, rankingSnapshotAt: asOf }) });
 }
 
@@ -97,8 +133,8 @@ export function parseRankingQuery(params, { allowName = false } = {}) {
   if (name !== null) {
     try { publicText(name, 13); } catch { throw new QueryError(); }
   }
-  if (!['level', 'fame'].includes(sort) ||
-      (className !== null && !['demon-avenger', 'paladin'].includes(className)) ||
+  if (!RANKING_SORTS.includes(sort) ||
+      (className !== null && !isPublicClassFilter(className)) ||
       (className !== null && params.has('job'))) throw new QueryError();
   return Object.freeze({
     page: integer('page', 1, 1, 10_000),
@@ -114,9 +150,9 @@ export function pageSnapshot(snapshot, query) {
     (query.name === null || row.name === query.name) &&
     (query.world === null || row.world === query.world) &&
     (query.job === null || row.jobId === query.job) &&
-    (query.className !== 'demon-avenger' || row.isDemonAvenger) &&
-    (query.className !== 'paladin' || (row.jobId === 122 && !row.isDemonAvenger)));
+    (query.className === null || matchesPublicClass(row, query.className)));
   const offset = (query.page - 1) * query.pageSize;
+  const scoreField = scoreFields[query.sort];
   const entries = filtered.slice(offset, offset + query.pageSize).map((row, i) => ({
     rank: offset + i + 1,
     name: row.name,
@@ -126,10 +162,10 @@ export function pageSnapshot(snapshot, query) {
     jobName: row.jobName,
     fame: row.fame,
     guildName: row.guildName,
-    score: null,
+    score: scoreField ? row[scoreField] : null,
   }));
   return { status: snapshot.status, asOf: snapshot.asOf,
-    data: { entries, total: filtered.length, page: query.page, pageSize: query.pageSize } };
+    data: { sort: query.sort, entries, total: filtered.length, page: query.page, pageSize: query.pageSize } };
 }
 
 export function createSnapshotCache({ source, now = Date.now, refreshMs = 10_000,

@@ -1,4 +1,5 @@
 /** Public DTOs. Database identifiers, account fields, and credentials never belong here. */
+import type { RankingSort } from "./ranking-options.ts";
 export type PortalState = "live" | "stale" | "unavailable" | "disabled" | "fixture";
 export interface PortalEnvelope<T> {
   status: PortalState;
@@ -28,7 +29,8 @@ export interface LeaderboardEntry {
 export interface RankingsData { entries: LeaderboardEntry[]; total: number | null; page?: number; pageSize?: number }
 /** RC1 standing collections always include complete, bounded pagination metadata. */
 export interface PublicRankingsData {
-  entries: (LeaderboardEntry & { exp: string; guildName: string | null; score: null })[];
+  sort: RankingSort;
+  entries: (LeaderboardEntry & { exp: string; guildName: string | null })[];
   total: number;
   page: number;
   pageSize: number;
@@ -100,6 +102,11 @@ export const TELEMETRY_KEYS = [
   "combat.mobs_killed", "combat.bosses_killed", "combat.unique_bosses_killed", "combat.deaths",
   "progress.exp_earned", "economy.mesos_earned", "economy.mesos_spent", "economy.nx_earned",
   "economy.nx_spent", "items.cubes_found", "items.cubes_spent", "items.glasses_spent",
+  "fishing.rolls_completed", "fishing.successful_catches", "fishing.missed_rolls",
+  "fishing.inventory_blocked_rolls", "fishing.exchanges_completed", "fishing.fish_spent",
+  "fishing.miracle_cubes_earned", "slayer.credited_kills", "slayer.contracts_completed",
+  "slayer.marks_earned", "slayer.marks_spent", "slayer.rerolls",
+  "slayer.ultimate_activations", "slayer.exp_purchased", "slayer.levels_purchased",
 ] as const;
 export type TelemetryMetric = typeof TELEMETRY_KEYS[number];
 export interface TelemetryData {

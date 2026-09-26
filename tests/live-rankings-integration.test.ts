@@ -16,7 +16,7 @@ void test('real HTTP bridge to portal adapter propagates fixture creation/progre
   t.after(() => keys.forEach((key, i) => { if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i]; }));
   const token = randomBytes(32).toString('base64url');
   let now = Date.now(), reads = 0, unavailable = false;
-  const first = { internalId: 5, name: 'FixtureHero', level: 20, exp: '12', jobId: 100, fame: 0, world: 0, guildName: 'FixtureGuild', isDemonAvenger: 0 };
+  const first = { internalId: 5, name: 'FixtureHero', level: 20, exp: '12', jobId: 100, fame: 0, world: 0, guildName: 'FixtureGuild', isDemonAvenger: 0, currentMesos: '100', expEarned: '200', mesosEarned: '300', currentNx: '400', nxEarned: '500', nxCreditEarned: '450', nxPrepaidEarned: '50' };
   let rows = [first];
   const cache = createSnapshotCache({ source: { readSnapshot: async () => { reads++; if (unavailable) throw new Error('private driver error'); return rows; } }, now: () => now, refreshMs: 10_000 });
   const server = createBridgeServer({ cache, token });
@@ -70,7 +70,7 @@ void test('RC1 real authenticated HTTP projects all four contracts and shares on
   // Actual HTTP transport with a synthetic source; this is not authoritative DB evidence.
   let now = Date.now(), reads = 0, runtimeReads = 0;
   const token = randomBytes(32).toString('base64url');
-  const sourceRow = { internalId: 1, name: 'FixtureNew', level: 1, exp: '0', jobId: 0, fame: 0, world: 0, guildName: null, isDemonAvenger: 0 };
+  const sourceRow = { internalId: 1, name: 'FixtureNew', level: 1, exp: '0', jobId: 0, fame: 0, world: 0, guildName: null, isDemonAvenger: 0, currentMesos: '0', expEarned: '0', mesosEarned: '0', currentNx: '0', nxEarned: '0', nxCreditEarned: '0', nxPrepaidEarned: '0' };
   const rows = [sourceRow, { ...sourceRow, internalId: 2, name: 'Paladin', jobId: 122 }, { ...sourceRow, internalId: 3, name: 'Avenger', jobId: 122, isDemonAvenger: 1 }, { ...sourceRow, internalId: 4, name: 'Slayer', jobId: 3112 }];
   const cache = createSnapshotCache({ source: { readSnapshot: async () => { reads++; return rows; } }, now: () => now });
   const runtime = createRuntimeCache({ source: { read: async () => { runtimeReads++; return { version: 1, asOf: new Date(now).toISOString(), online: true, playersOnline: 3, channels: [{ channel: 1, status: 'online', playersOnline: 3 }], uptimeSeconds: 900, rates: { exp: 3, meso: 2, drop: 1 } }; } }, now: () => now });

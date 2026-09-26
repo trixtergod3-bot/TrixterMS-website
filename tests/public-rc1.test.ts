@@ -9,7 +9,7 @@ const at = Date.parse("2026-09-13T10:00:00.000Z");
 const asOf = new Date(at).toISOString();
 const config = { url: "https://protected-bridge.invalid/reader", token: "synthetic-only-token_abcdefghijklmnopqrstuvwxyz0123456789" };
 const row = { rank: 1, name: "LevelOne", level: 1, exp: "0", jobId: 0, jobName: "Beginner", fame: 0, guildName: null, score: null };
-const page = { entries: [row], total: 1, page: 1, pageSize: 50 };
+const page = { sort: "level", entries: [row], total: 1, page: 1, pageSize: 50 };
 const stats = { totalCharacters: 1, classDistribution: [{ jobName: "Beginner", count: 1 }], rankingSnapshotAt: asOf };
 const runtime = { online: true, playersOnline: 2, channels: [{ channel: 1, status: "online", playersOnline: 2 }], uptimeSeconds: 3600, rates: { exp: 3, meso: 2, drop: 1 }, runtimeAsOf: asOf, runtimeStatus: "live", recentActivity: null };
 const telemetry = { ...stats, ...runtime };
@@ -43,10 +43,17 @@ void test("exact characters filter and pagination must match upstream; sorting r
   assert.equal((await makeReader().read("/api/public/characters", { name: "levelone" })).status, "unavailable");
   for (const query of [{ page: 2 }, { limit: 25 }, { job: 122 }, { class: "paladin" }]) assert.equal((await makeReader().read("/api/public/rankings", query)).status, "unavailable");
   for (const change of [{ rank: 2 }, { exp: 9007199254740992 }, { exp: "01" }, { score: "1" }]) assert.equal((await makeReader({ ...page, entries: [{ ...row, ...change }] }).read("/api/public/rankings")).status, "unavailable");
-  const disordered = { entries: [row, { ...row, rank: 2, name: "HigherLevel", level: 2 }], total: 2, page: 1, pageSize: 50 };
+  const disordered = { sort: "level", entries: [row, { ...row, rank: 2, name: "HigherLevel", level: 2 }], total: 2, page: 1, pageSize: 50 };
   assert.equal((await makeReader(disordered).read("/api/public/rankings")).status, "unavailable");
-  const fame = { entries: [{ ...row, fame: 5 }, { ...row, rank: 2, name: "HigherLevel", level: 2, fame: 1 }], total: 2, page: 1, pageSize: 50 };
+  const fame = { sort: "fame", entries: [{ ...row, fame: 5 }, { ...row, rank: 2, name: "HigherLevel", level: 2, fame: 1 }], total: 2, page: 1, pageSize: 50 };
   assert.equal((await makeReader(fame).read("/api/public/rankings", { sort: "fame" })).status, "live");
+  const metric = { sort: "nx-credit-earned", entries: [{ ...row, score: "9007199254740993" },
+    { ...row, rank: 2, name: "Second", score: "9007199254740992" }], total: 2, page: 1, pageSize: 50 };
+  const metricResult = await makeReader(metric).read<PublicRankingsData>("/api/public/rankings", { sort: "nx-credit-earned" });
+  assert.equal(metricResult.status, "live");
+  assert.equal(metricResult.data?.entries[0].score, "9007199254740993");
+  const unsortedMetric = { ...metric, entries: [{ ...metric.entries[0], score: "1" }, { ...metric.entries[1], score: "2" }] };
+  assert.equal((await makeReader(unsortedMetric).read("/api/public/rankings", { sort: "nx-credit-earned" })).status, "unavailable");
 });
 
 void test("statistics reject inconsistent totals, classes and snapshot timestamps", async () => {
@@ -187,7 +194,7 @@ void test("sustained randomized successful polling stays within the shared120/mi
   const reader = createPublicReader({ now: () => clock, config: () => config, fetcher: async input => {
     calls++;
     const url = new URL(input instanceof URL ? input.href : typeof input === "string" ? input : input.url);
-    return Response.json(envelope({ entries: [], total: 0, page: Number(url.searchParams.get("page")), pageSize: 50 }, new Date(clock).toISOString()));
+    return Response.json(envelope({ sort: "level", entries: [], total: 0, page: Number(url.searchParams.get("page")), pageSize: 50 }, new Date(clock).toISOString()));
   } });
   for (let second = 0; second < 60; second++) {
     await Promise.all(Array.from({ length: 20 }, (_, index) => reader.read("/api/public/rankings", { page: second * 20 + index + 1 })));

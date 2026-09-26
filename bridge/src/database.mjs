@@ -2,8 +2,10 @@ import { verifyReaderBoundary } from './privileges.mjs';
 
 // Only this module loads the external driver; fake-source tests have no dependencies.
 export const SNAPSHOT_SQL = `SELECT internalId, world, name, level,
-  CAST(exp AS CHAR) AS exp, jobId, fame, guildName, isDemonAvenger
-  FROM trixter_public_characters_v1
+  CAST(exp AS CHAR) AS exp, jobId, fame, guildName, isDemonAvenger,
+  currentMesos, expEarned, mesosEarned, currentNx,
+  nxEarned, nxCreditEarned, nxPrepaidEarned
+  FROM trixter_public_rankings_v2
   ORDER BY internalId ASC LIMIT ?`;
 
 export const POOL_LIMITS = Object.freeze({

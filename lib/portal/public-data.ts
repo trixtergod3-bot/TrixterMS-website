@@ -1,4 +1,6 @@
 import type { PortalEnvelope, PortalQuery, PublicRankingsData, PublicStatsData, PublicTelemetryData, StatusData } from "./contracts.ts";
+import { matchesRankingClass, RANKING_CLASS_KEYS, RANKING_SORT_KEYS } from "./ranking-options.ts";
+import type { RankingClass, RankingSort } from "./ranking-options.ts";
 
 // Server Components and Route Handlers only. Credentials never enter DTOs or cache keys.
 type Obj = Record<string, unknown>;
@@ -40,7 +42,7 @@ export function publicRequest(path: string, query: PortalQuery | URLSearchParams
     if (["page", "limit", "job", "world"].includes(key)) {
       if (!/^(0|[1-9]\d{0,4})$/u.test(value)) throw new Error("Invalid numeric query");
       integer(Number(value), key === "page" || key === "limit" ? 1 : 0, key === "page" ? 10000 : key === "limit" ? 100 : key === "world" ? 127 : 99999);
-    } else if (key === "sort" && !["level", "fame"].includes(value) || key === "class" && !["paladin", "demon-avenger"].includes(value)) throw new Error("Invalid filter");
+    } else if (key === "sort" && !RANKING_SORT_KEYS.has(value) || key === "class" && !RANKING_CLASS_KEYS.has(value)) throw new Error("Invalid filter");
     else if (key === "name") text(value, 13);
     values.set(key, value);
   }
@@ -55,23 +57,29 @@ export function publicRequest(path: string, query: PortalQuery | URLSearchParams
 
 function rankings(value: unknown, request: PublicRequest): PublicRankingsData {
   const v = object(value), total = integer(v.total), page = integer(v.page, 1, 10000), pageSize = integer(v.pageSize, 1, 100);
+  const sort = request.query.get("sort") as RankingSort;
+  if (v.sort !== sort) throw new Error("Mismatched ranking sort");
   if (page !== Number(request.query.get("page")) || pageSize !== Number(request.query.get("limit"))) throw new Error("Mismatched pagination");
   const entries = array(v.entries, (item) => {
     const row = object(item);
-    if (row.score !== null) throw new Error("Unsupported score");
-    return { rank: integer(row.rank, 1), name: text(row.name, 13), level: integer(row.level, 1, 1000), exp: decimal(row.exp), jobId: integer(row.jobId, 0, 99999), jobName: text(row.jobName), fame: integer(row.fame, -2147483648, 2147483647), guildName: nullable(row.guildName, (item) => text(item, 45)), score: null };
+    const metricSort = sort !== "level" && sort !== "fame";
+    const score = nullable(row.score, decimal);
+    if (metricSort === (score === null)) throw new Error("Unsupported score");
+    return { rank: integer(row.rank, 1), name: text(row.name, 13), level: integer(row.level, 1, 1000), exp: decimal(row.exp), jobId: integer(row.jobId, 0, 99999), jobName: text(row.jobName), fame: integer(row.fame, -2147483648, 2147483647), guildName: nullable(row.guildName, (item) => text(item, 45)), score };
   }, 100);
   const offset = (page - 1) * pageSize;
   if (entries.length !== Math.max(0, Math.min(pageSize, total - offset)) || new Set(entries.map(row => row.name.toLowerCase())).size !== entries.length) throw new Error("Inconsistent page");
   entries.forEach((row, index) => {
-    if (row.rank !== offset + index + 1 || request.query.has("job") && row.jobId !== Number(request.query.get("job")) || request.query.get("class") === "demon-avenger" && row.jobName !== "Demon Avenger" || request.query.get("class") === "paladin" && row.jobName !== "Paladin" || request.query.has("name") && row.name !== request.query.get("name")) throw new Error("Mismatched standing");
+    const classFilter = request.query.get("class") as RankingClass | null;
+    if (row.rank !== offset + index + 1 || request.query.has("job") && row.jobId !== Number(request.query.get("job")) || classFilter !== null && !matchesRankingClass(row.jobId, row.jobName, classFilter) || request.query.has("name") && row.name !== request.query.get("name")) throw new Error("Mismatched standing");
     const prior = entries[index - 1];
     if (prior) {
-      const fameDifference = request.query.get("sort") === "fame" ? prior.fame - row.fame : 0;
-      if (fameDifference < 0 || fameDifference === 0 && (prior.level < row.level || prior.level === row.level && BigInt(prior.exp) < BigInt(row.exp))) throw new Error("Unsorted standings");
+      const fameDifference = sort === "fame" ? prior.fame - row.fame : 0;
+      const scoreDifference = sort !== "level" && sort !== "fame" ? BigInt(prior.score!) - BigInt(row.score!) : 0n;
+      if (fameDifference < 0 || scoreDifference < 0n || fameDifference === 0 && scoreDifference === 0n && (prior.level < row.level || prior.level === row.level && BigInt(prior.exp) < BigInt(row.exp))) throw new Error("Unsorted standings");
     }
   });
-  return { entries, total, page, pageSize };
+  return { sort, entries, total, page, pageSize };
 }
 
 function stats(value: Obj, asOf: string): PublicStatsData {

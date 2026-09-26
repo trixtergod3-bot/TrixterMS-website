@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { portalRequest, readCharacterAchievementsVerified, readPortal, validatePortalData } from "../lib/portal/data.ts";
 import { createPublicReader } from "../lib/portal/public-data.ts";
+import { TELEMETRY_KEYS } from "../lib/portal/contracts.ts";
 
 const status = { online: true, playersOnline: 12, version: "111.1", rates: { exp: null, meso: null, drop: null } };
 const row = { rank: 1, name: "Example", level: 30, jobId: 100, jobName: "Warrior", fame: 0, score: "9223372036854775807" };
 const rankingRow = { ...row, exp: "9223372036854775807", guildName: null };
-const rankingPage = { entries: [rankingRow], total: 1, page: 1, pageSize: 50 };
+const rankingPage = { sort: "nx-earned", entries: [rankingRow], total: 1, page: 1, pageSize: 50 };
 const unlockedAt = "2026-09-12T10:00:00.000Z";
 const achievementDefinition = { key: "TEST_LEVEL_010", category: "LEVELING", name: "Matched live title", description: "Test-only catalog definition.", eventKey: "progress.level", dimension: "all", aggregation: "SNAPSHOT", threshold: "10", points: 10, displayOrder: 10, enabled: true };
 const secondDefinition = { ...achievementDefinition, key: "TEST_LEVEL_030", threshold: "30", points: 20, displayOrder: 20 };
@@ -88,6 +89,13 @@ void test("BIGINT strings remain exact and unsafe numeric counters are rejected"
   const result = validatePortalData("rankings", rankingPage) as { entries: { score: string }[] };
   assert.equal(result.entries[0].score, "9223372036854775807");
   for (const score of [9223372036854776000, "9223372036854775808", "-1", "01", "1e10"]) assert.throws(() => validatePortalData("rankings", { ...rankingPage, entries: [{ ...rankingRow, score }] }));
+});
+
+void test("public telemetry allowlist includes the Fishing and Slayer foundation", () => {
+  assert.equal(TELEMETRY_KEYS.length, 27);
+  assert.ok(TELEMETRY_KEYS.includes("fishing.successful_catches"));
+  assert.ok(TELEMETRY_KEYS.includes("slayer.contracts_completed"));
+  assert.ok(TELEMETRY_KEYS.includes("slayer.levels_purchased"));
 });
 
 void test("backend payloads are projected to public fields only", () => {

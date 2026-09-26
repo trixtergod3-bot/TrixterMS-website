@@ -2,7 +2,7 @@
 
 This is a standalone Node service for the existing website. It reads a restricted SQL view on the verified game database host and serves only public ranking DTOs to the website's server-side provider. It does not start or restart the game, write player data, alter gameplay, connect a browser to MariaDB, or require a website rebuild when characters change.
 
-Code and fake-source tests are implemented. **No view, database account, index, host process, proxy, or deployment is created by installing this package.** Real database and website verification remain separate required steps. Follow the repository's current host authority and process-path rules before host operations; historical SINGLE_PC notes do not override the current owner instruction naming `trixterms-beta-host`.
+Code and fake-source tests are implemented. **No view, database account, index, host process, proxy, or deployment is created by installing this package.** Real database and website verification remain separate required steps. Follow the authoritative TrixterMS workspace's current host authority and process-path rules before any host operation; this website repository does not decide which game runtime is authoritative.
 
 ## Contract
 
@@ -13,6 +13,7 @@ Authenticated `GET /api/public/rankings?page=1&limit=50` returns (`/api/rankings
   "status": "live",
   "asOf": "2026-09-13T00:00:00.000Z",
   "data": {
+    "sort": "level",
     "entries": [],
     "total": 0,
     "page": 1,
@@ -21,13 +22,15 @@ Authenticated `GET /api/public/rankings?page=1&limit=50` returns (`/api/rankings
 }
 ```
 
-Each entry contains exactly `rank`, `name`, `level`, `exp` (decimal string), `jobId`, `jobName`, `fame`, `guildName` (nullable), and `score` (null for character rankings). Internal character IDs, world values, and the DA classification boolean never enter the public entry. No account table is read. No private character ownership, credentials, or quest data enters the view output.
+Each entry contains exactly `rank`, `name`, `level`, `exp` (decimal string), `jobId`, `jobName`, `fame`, `guildName` (nullable), and `score`. `score` is null for level/fame and an exact non-negative decimal string for economy/telemetry sorts. Internal character IDs, world values, account IDs, wallet components, and the DA classification boolean never enter the public entry. The restricted view reads only approved account eligibility/NX columns; no account identity, credential, contact, session, Maple Point, or quest payload enters the view output.
 
 - `page`: 1–10000; `limit`: 1–100, default 50. An out-of-range page is an empty page with the correct total.
 - `sort=level` (default): level descending, exact EXP descending, internal ID ascending.
 - `sort=fame`: fame descending, then the same progression/tie ordering.
+- `sort=exp-earned`, `current-mesos`, `mesos-earned`, `current-nx`, `nx-earned`, `nx-credit-earned`, or `nx-prepaid-earned`: exact score descending, then level, current EXP and internal ID. Earned values come from lifetime telemetry; missing counters are zero.
+- `current-nx` is `NxCredit + NxPrepaid` and deliberately excludes Maple Points. Because NX is account-scoped, only the eligible character with the highest level/current EXP (then lowest internal ID) represents each account in that one ranking. Account identifiers and wallet components remain private.
 - Optional `world=0..127` and `job=0..99999` apply in memory to the same snapshot.
-- `class=demon-avenger` selects all marked supported DA carriers. `class=paladin` selects unmarked job 122. `class` and `job` cannot be combined.
+- `class` accepts one of the explicit playable class-line keys published by `src/jobs.mjs`, from `beginner` through `mechanic`. It covers lower job advancements within each line. `demon-avenger` selects marked supported carriers; `paladin` and `warrior` exclude those marked carriers. `class` and `job` cannot be combined.
 - `total` counts the filtered population; `rank` is the position within the filtered ordering, including page offset.
 - `/api/public/characters` returns the same paginated standing collection and permits an optional exact, case-sensitive `name` filter (1–13 characters, no control characters). A missing name returns an empty collection; it never reveals a private lookup identifier. The rankings endpoint rejects `name`.
 - `/api/public/stats` accepts no query parameters. Its `data` is exactly `{totalCharacters, classDistribution:[{jobName,count}], rankingSnapshotAt}`. Class names use the same DA-aware presentation as rankings; counts cover every eligible character. Distribution is sorted by public job name, and its counts sum to the unfiltered total.
@@ -41,7 +44,7 @@ Each entry contains exactly `rank`, `name`, `level`, `exp` (decimal string), `jo
 
 The source schema is documented in `server/sql/seperate/12-characters.sql`, `31-guilds.sql`, and `65-queststatus.sql`; those are alternate schema documentation, **not additive migrations to import**. The baseline import authority remains `server/sql/aio/lidium.sql` plus reviewed applied migrations.
 
-The view in [schema.sql](schema.sql) projects `characters.id/world/name/level/exp/job/fame`, and joins `characters.guildid` to `guilds.guildid/name`. `MapleClient.deleteCharacter` physically deletes `characters`; there is no `deleted` or `active` flag. Eligibility is row existence: every persisted non-deleted character is included, including level one, staff, and unfamiliar job IDs. There is no account, GM, ban, minimum-level, recent-login, or online filter. A bad row fails the whole snapshot visibly rather than silently dropping a character.
+The V2 view in [schema.sql](schema.sql) projects the public character fields, current mesos, five approved lifetime telemetry counters, and an account-representative combined NX balance. It joins guild display name and uses account/character GM and ban flags only for eligibility. `MapleClient.deleteCharacter` physically deletes `characters`; there is no `deleted` or `active` flag. Every persisted non-deleted, non-staff character on a non-staff, non-banned account is eligible, including level one and unfamiliar job IDs. There is no minimum-level, recent-login, or online filter. A bad row fails the whole snapshot visibly rather than silently dropping a character.
 
 `MapleCharacter.getDefault` starts normal creation at level 1. `saveNewCharToDB` inserts the character and commits the transaction before successful creation is acknowledged. Logout leaves the character row intact. The old `RankingWorker` is deliberately not used: its level-30 threshold, job allowlist, rank writes, and fame tiebreaker conflict with this contract.
 
@@ -56,40 +59,44 @@ The SQL uses `BINARY` equality, matching Java's exact string comparison includin
 
 ## Cache and query cost
 
-All requests share one immutable snapshot and two pre-sorted arrays. The first request after 10 seconds starts one refresh; concurrent callers await the same promise. Idle time causes no database traffic. The query uses one bounded, parameterized SELECT over the view with the existing character primary key ordering; ranks and filter totals are computed in memory. There is no per-character database request, no per-browser SQL query while cached, and no N+1 guild fetch.
+All requests share one immutable snapshot and nine pre-sorted arrays. The first request after 10 seconds starts one refresh; concurrent callers await the same promise. Idle time causes no database traffic. The query uses one bounded, parameterized SELECT over the view with the existing character primary key ordering; ranks and filter totals are computed in memory. There is no per-character database request, no per-browser SQL query while cached, and no N+1 guild or telemetry fetch.
 
 The default maximum is 50000 characters; the hard configuration ceiling is 100000. Fetching one extra row detects over-capacity, and a 16 MiB serialized projection budget provides a second bound. Exceeding either never publishes an incomplete snapshot. Raw rows are also bounded by SQL `LIMIT` and fixed schema column widths. The one-connection pool uses 2-second statement limits, a 3-second acquire timeout, and a 4-second socket timeout. An unsuccessful refresh backs off at 10/20/40/60 seconds. A previously complete snapshot remains available with explicit `status:"stale"` only while it is less than 120 seconds old; at 120 seconds it is discarded and the endpoint returns 503. Old data is never returned as `live` after expiry/failure. An over-capacity refresh follows the same rule: temporarily retain the labelled previous complete snapshot, then become unavailable.
 
 All ranking pages, character lookups, stats and telemetry share this one cache and one in-flight read. Class distribution is computed once per refresh. Polling 100 callers each second for a minute causes six SELECTs in deterministic tests. An unavailable source receives at most one new attempt after its bounded backoff; query/endpoint variation cannot create new source caches. These are per-process bounds: activate one supervised bridge, rather than multiplying bridge instances.
 
-Existing source indexes are `characters.PRIMARY(id)`, `guilds.PRIMARY(guildid)`, and `queststatus.characterid`. There is no proven ranking composite index. Since this implementation sorts each shared snapshot in memory, it needs no speculative level/EXP index. The marker subquery can use `queststatus.characterid`; a `(characterid, quest, status)` index is a possible measured follow-up only. Inspect actual indexes and `EXPLAIN`, row counts, and query latency on the verified host before traffic. Benchmark a disposable copy and back up before any approved index change; this package applies none.
+Existing relevant source indexes include `characters.PRIMARY(id)`, `guilds.PRIMARY(guildid)`, `queststatus.characterid`, and the telemetry counter primary key `(character_id, metric_key, dimension_key)`. There is no proven ranking composite index. Since this implementation sorts each shared snapshot in memory, it needs no speculative score index. The marker and account-representative subqueries still require real-host `EXPLAIN` and latency evidence before activation. Benchmark a disposable copy and back up before any approved index change; this package applies none.
 
 `asOf` is query-start time, conservatively reporting freshness. A 10-second source cache plus a 20-second website poll targets roughly 10–30 seconds **after the change commits to the database**. Current game source `Start.java` autosaves online characters every **five minutes**. Creation commits immediately; in-memory level/EXP gains may wait for normal save/logout, then appear at the next refresh. This lane does not shorten autosave or add gameplay persistence writes. Do not claim a 30-second in-game leveling SLA or verified integration without the real owner test.
 
 ## Host provisioning, performed separately
 
 1. On the currently authorized game host, confirm repository root, game/MariaDB executable paths, process identity, schema, MariaDB version, and loopback-only 3306 listener. Preserve active player state and existing configuration. Never start a replacement local game/database to simulate the authoritative source. Record only safe paths, counts, hashes, and aggregate evidence.
-2. Inspect `SHOW COLUMNS` and `SHOW INDEX` for the three tables locally. Do not print player rows or account data. Check that the view/account names below do not already exist; this source intentionally has no `CREATE OR REPLACE`. Inspect existing conflicting definitions before any change.
+2. Inspect `SHOW COLUMNS` and `SHOW INDEX` for `characters`, `accounts`, `guilds`, `queststatus`, and `trixter_telemetry_character_counters` locally. Do not print player rows or account data. Check that the view/account names below do not already exist; this source intentionally has no `CREATE OR REPLACE`. Inspect existing conflicting definitions before any change.
 3. Take a protected backup through the host's existing authorized backup procedure. Keep SQL backups and credential-bearing files local and ignored. Use the project's existing protected MariaDB option file for administrator access; never put passwords on the command line or in Git. Existing secret mechanisms are ignored `local/secrets.env`, `local/server.properties`, and client option files generated by `tools/common.ps1`. Do not reuse the game application's login in the bridge.
 4. Create `trixter_public_definer@localhost` as a dedicated locked account through protected administrator input. Give it only the following column grants (use the verified schema name if it differs):
 
 ```sql
-GRANT SELECT (id, world, name, level, exp, job, fame, guildid)
+GRANT SELECT (id, accountid, world, name, level, exp, job, fame, guildid, gm, meso)
   ON trixterms_dev.characters TO 'trixter_public_definer'@'localhost';
+GRANT SELECT (id, banned, gm, NxPrepaid, NxCredit)
+  ON trixterms_dev.accounts TO 'trixter_public_definer'@'localhost';
 GRANT SELECT (guildid, name)
   ON trixterms_dev.guilds TO 'trixter_public_definer'@'localhost';
 GRANT SELECT (characterid, quest, status, customData)
   ON trixterms_dev.queststatus TO 'trixter_public_definer'@'localhost';
+GRANT SELECT (character_id, metric_key, dimension_key, counter_value)
+  ON trixterms_dev.trixter_telemetry_character_counters TO 'trixter_public_definer'@'localhost';
 ```
 
 5. As the authorized administrator, execute the reviewed [schema.sql](schema.sql) against that schema. The fixed definer is the locked column reader, **never root**. Create `trixter_public_reader@127.0.0.1` with a newly generated strong password via a protected local provisioning mechanism. If the host's MariaDB resolves loopback users as localhost, provision that exact host account instead after inspection, never a wildcard host. Grant only:
 
 ```sql
-GRANT SELECT ON trixterms_dev.trixter_public_characters_v1
+GRANT SELECT ON trixterms_dev.trixter_public_rankings_v2
   TO 'trixter_public_reader'@'127.0.0.1';
 ```
 
-6. Confirm locally that reader privileges are **only SELECT on this view**, with no grant option, global/schema/table base privileges, inherited role access, or write privileges. Confirm direct reads of `characters`, `queststatus`, and `accounts` are denied using zero-row SELECTs. Confirm `EXPLAIN` for the bridge query and the real bounds. Do not copy credential-bearing `SHOW GRANTS`/user definitions into evidence. The view is the least-privilege boundary; connection read-only flags are additional defense, not a replacement for the grants.
+6. Confirm locally that reader privileges are **only SELECT on this view**, with no grant option, global/schema/table base privileges, inherited role access, or write privileges. Confirm direct reads of `characters`, `queststatus`, `accounts`, and `trixter_telemetry_character_counters` are denied using zero-row SELECTs. Confirm `EXPLAIN` for the bridge query and the real bounds. Do not copy credential-bearing `SHOW GRANTS`/user definitions into evidence. The view is the least-privilege boundary; connection read-only flags are additional defense, not a replacement for the grants.
 7. In this bridge directory run `npm ci --ignore-scripts` from the reviewed lockfile. Prepare ignored `local/bridge.env` with file access restricted to the service owner. The package's `npm start` uses Node's `--env-file=local/bridge.env` and the included supervisor to avoid shell arguments containing secrets. Never create `NEXT_PUBLIC_` versions. Use these keys (the bracketed values are instructions, not working defaults):
 
 ```text
@@ -110,7 +117,7 @@ The service token must have at least 43 base64url characters and adequate charac
 9. Start one included supervisor as described below. Publish only an authenticated HTTPS reverse-proxy route to loopback 4316. Keep the route private to the website server where possible (private tunnel/network or access policy), preserve TLS verification, and require `Authorization: Bearer <service token>` at the bridge. Configure proxy rate limits, no request/authorization-body logs, no caching of failures, and request timeouts. Do not open 3306, disable TLS verification, expose the plain-HTTP bridge port, or place the token in browser JavaScript. The website server-side provider receives its HTTPS base URL and token through existing server environment secrets. Route the four `/api/public/*` paths and optional `/api/rankings` alias to the bridge; leave the existing website routing, DNS and `/beta` patch feed untouched.
 10. Verify the public website endpoint, browser polling, and native in-game creation flow against the real database. Compare locally without copying private rows. Check new level-one appearance, committed EXP/level update, logout persistence, correct guild/job labels, pagination, mobile layout, outage/recovery, public DTO allowlist, token absence in browser bundle, and loopback-only DB listener. Record implemented/tested/verified/ownerAccepted separately.
 
-Rollback is scoped: stop only this bridge, remove its HTTPS route and website bridge configuration, revoke/drop only these dedicated view accounts, and drop only `trixter_public_characters_v1` after checking dependencies. No game restart, character/database restore, WZ change, or global firewall change is required.
+Rollback is scoped: stop only this bridge, remove its HTTPS route and website bridge configuration, revoke/drop only these dedicated view accounts, and drop only `trixter_public_rankings_v2` after checking dependencies. No game restart, character/database restore, WZ change, or global firewall change is required.
 
 ### Separate administrator query-plan check
 
@@ -120,7 +127,7 @@ If the reader receipt reports `explainRequiresAdministrator:true`, use the host'
 $planClient = (Get-Command mariadb -CommandType Application -ErrorAction Stop).Source
 $planOptions = '<existing protected administrator option-file path>'
 $planSchema = '<verified game schema>'
-$planQuery = 'EXPLAIN SELECT internalId, world, name, level, CAST(exp AS CHAR) AS exp, jobId, fame, guildName, isDemonAvenger FROM trixter_public_characters_v1 ORDER BY internalId ASC LIMIT 50001'
+$planQuery = 'EXPLAIN SELECT internalId, world, name, level, CAST(exp AS CHAR) AS exp, jobId, fame, guildName, isDemonAvenger, currentMesos, expEarned, mesosEarned, currentNx, nxEarned, nxCreditEarned, nxPrepaidEarned FROM trixter_public_rankings_v2 ORDER BY internalId ASC LIMIT 50001'
 & $planClient "--defaults-extra-file=$planOptions" "--database=$planSchema" '--batch' '--raw' '--execute' $planQuery
 ```
 

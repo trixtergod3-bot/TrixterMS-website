@@ -1,6 +1,7 @@
 import { TELEMETRY_KEYS } from "./contracts.ts";
 import type { AchievementsData, CharacterAchievementsData, PortalEnvelope, PortalQuery } from "./contracts.ts";
 import { isPublicPath, readPublic, PublicRateLimitError } from "./public-data.ts";
+import { RANKING_CLASS_KEYS, RANKING_SORT_KEYS } from "./ranking-options.ts";
 
 // This module is for Server Components and Route Handlers only. No NEXT_PUBLIC secret or DB connection.
 type Obj = Record<string, unknown>;
@@ -99,14 +100,17 @@ export function validatePortalData(kind: Kind, value: unknown): unknown {
   switch (kind) {
     case "status": { const rates = object(v.rates); const rate = (x: unknown) => { if (typeof x !== "number" || !Number.isFinite(x) || x < 0 || x > 1000000) throw new Error("Invalid rate"); return x; }; return { online: nullable(v.online, boolean), playersOnline: nullable(v.playersOnline, integer), version: nullable(v.version, (x) => string(x, 40)), rates: { exp: nullable(rates.exp, rate), meso: nullable(rates.meso, rate), drop: nullable(rates.drop, rate) } }; }
     case "rankings": {
+      if (typeof v.sort !== "string" || !RANKING_SORT_KEYS.has(v.sort)) throw new Error("Invalid ranking sort");
+      const metricSort = v.sort !== "level" && v.sort !== "fame";
       const entries = leaderboard(v.entries, true).map((row, index) => {
         const source = object((v.entries as unknown[])[index]);
+        if (metricSort === (row.score === null)) throw new Error("Invalid ranking score");
         return { ...row, exp: decimal(source.exp), guildName: nullable(source.guildName, (x) => string(x, 45)) };
       });
       const total = integer(v.total), page = integer(v.page, 1, 10000), pageSize = integer(v.pageSize, 1, 100);
       const offset = (page - 1) * pageSize;
       if (entries.length !== Math.max(0, Math.min(pageSize, total - offset)) || entries.some((row, index) => row.rank !== offset + index + 1)) throw new Error("Inconsistent ranking page");
-      return { entries, total, page, pageSize };
+      return { sort: v.sort, entries, total, page, pageSize };
     }
     case "daily": case "weekly": {
       const entries = leaderboard(v.entries), finalized = boolean(v.finalized), winner = nullable(v.winner, name);
@@ -143,10 +147,10 @@ export function portalRequest(path: string, query: PortalQuery = {}): { kind: Ki
     if (!allowed[kind]?.includes(param)) throw new Error("Unsupported query parameter");
     const value = String(raw);
     if (["page", "limit", "job", "world", "shopId"].includes(param)) { if (!/^\d{1,7}$/.test(value)) throw new Error("Invalid numeric query"); const n = Number(value); if (param === "limit" && (n < 1 || n > 100) || param === "page" && (n < 1 || n > 10000)) throw new Error("Query out of range"); }
-    else if (param === "class") oneOf(value, ["demon-avenger", "paladin"]);
+    else if (param === "class" && !RANKING_CLASS_KEYS.has(value)) throw new Error("Invalid class filter");
     else if (["date", "weekStart"].includes(param)) date(value);
     else if (param === "metric" && !metricPattern.test(value) || param === "dimension" && !dimensionPattern.test(value)) throw new Error("Invalid metric");
-    else if (param === "sort" && !["level", "fame"].includes(value) || param === "boss" && !["true", "false"].includes(value)) throw new Error("Invalid filter");
+    else if (param === "sort" && !RANKING_SORT_KEYS.has(value) || param === "boss" && !["true", "false"].includes(value)) throw new Error("Invalid filter");
     else string(value, param === "q" ? 80 : 96);
     parsed.set(param, value);
   }

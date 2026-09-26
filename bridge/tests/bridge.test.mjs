@@ -14,7 +14,9 @@ const token = 'test-only-fake-ServiceTokenForHttpChecks_123456789';
 const options = { maxRows: 100, maxBytes: 16_000 };
 const timestamp = '2026-09-13T00:00:00.000Z';
 const row = (id, patch = {}) => ({ internalId: id, world: 0, name: `Player${id}`,
-  level: 1, exp: '0', jobId: 0, fame: 0, guildName: null, isDemonAvenger: 0, ...patch });
+  level: 1, exp: '0', jobId: 0, fame: 0, guildName: null, isDemonAvenger: 0,
+  currentMesos: '0', expEarned: '0', mesosEarned: '0', currentNx: '0', nxEarned: '0',
+  nxCreditEarned: '0', nxPrepaidEarned: '0', ...patch });
 const query = (text = '') => parseRankingQuery(new URLSearchParams(text));
 const snapshot = (rows) => createSnapshot(rows, timestamp, options);
 
@@ -41,6 +43,20 @@ test('fame sort uses progression and stable ID for ties', () => {
   assert.deepEqual(result.data.entries.map((entry) => entry.name), ['Player3', 'Player2', 'Player1']);
 });
 
+test('telemetry and wallet rankings disclose exact scores with deterministic ties', () => {
+  const records = [row(1, { expEarned: '9007199254740993' }), row(2, { expEarned: '9007199254740992' }),
+    row(3, { expEarned: '9007199254740993', level: 2 }), row(4, { currentNx: null })];
+  const earned = pageSnapshot(snapshot(records), query('sort=exp-earned'));
+  assert.deepEqual(earned.data.entries.map((entry) => [entry.name, entry.score]), [
+    ['Player3', '9007199254740993'], ['Player1', '9007199254740993'],
+    ['Player2', '9007199254740992'], ['Player4', '0'],
+  ]);
+  assert.equal(earned.data.sort, 'exp-earned');
+  const wallet = pageSnapshot(snapshot(records), query('sort=current-nx'));
+  assert.equal(wallet.data.total, 3, 'non-representative account rows do not duplicate NX balances');
+  assert.ok(wallet.data.entries.every((entry) => entry.score === '0'));
+});
+
 test('DA uses supported marked carrier; actual Paladin and Demon Slayer retain identity', () => {
   for (const job of [100, 120, 121, 122]) assert.equal(resolveJobName(job, true), 'Demon Avenger');
   assert.equal(resolveJobName(122, false), 'Paladin');
@@ -57,6 +73,11 @@ test('normal v111 classes and regional labels are maintained without eligibility
     [2218, 'Evan'], [2312, 'Mercedes'], [3212, 'Battle Mage'], [3312, 'Wild Hunter'], [3512, 'Mechanic']]) {
     assert.equal(resolveJobName(id, false), name);
   }
+  const records = [row(1, { jobId: 110 }), row(2, { jobId: 112 }), row(3, { jobId: 2400 }),
+    row(4, { jobId: 100, isDemonAvenger: 1 })];
+  assert.deepEqual(pageSnapshot(snapshot(records), query('class=hero')).data.entries.map((entry) => entry.name), ['Player1', 'Player2']);
+  assert.deepEqual(pageSnapshot(snapshot(records), query('class=phantom')).data.entries.map((entry) => entry.name), ['Player3']);
+  assert.deepEqual(pageSnapshot(snapshot(records), query('class=warrior')).data.entries, []);
 });
 
 test('world and raw job filter combine; pagination rank is relative to filtered ordering', () => {
@@ -72,7 +93,7 @@ test('world and raw job filter combine; pagination rank is relative to filtered 
 
 test('empty source is successful live empty data', () => {
   assert.deepEqual(pageSnapshot(snapshot([]), query()), { status: 'live', asOf: timestamp,
-    data: { entries: [], total: 0, page: 1, pageSize: 50 } });
+    data: { sort: 'level', entries: [], total: 0, page: 1, pageSize: 50 } });
 });
 
 test('public DTO strips all unknown columns and internal metadata', () => {
@@ -93,7 +114,8 @@ test('capacity, byte budget, duplicate IDs and invalid source values fail closed
   assert.throws(() => snapshot([row(1), row(1)]), UnavailableError);
   for (const patch of [{ exp: '-1' }, { exp: '1.1' }, { exp: '9223372036854775808' },
     { exp: 9007199254740992 }, { name: '' }, { name: 'bad\nname' }, { name: 'abcdefghijklmn' },
-    { world: null }, { internalId: 0 }, { fame: NaN }, { guildName: 'x'.repeat(46) }]) {
+    { world: null }, { internalId: 0 }, { fame: NaN }, { guildName: 'x'.repeat(46) },
+    { expEarned: '-1' }, { currentNx: '01' }, { nxCreditEarned: '9223372036854775808' }]) {
     assert.throws(() => projectSourceRow(row(1, patch)), UnavailableError);
   }
 });
@@ -256,7 +278,7 @@ test('driver requests a single bounded read from the safe view with timeouts', a
   await source.close(); assert.equal(closed, true);
 });
 
-test('SQL view preserves exact DA semantics and has no private projections or eligibility filters', async () => {
+test('SQL view preserves DA semantics, approved telemetry, and public eligibility filters', async () => {
   const sql = (await readFile(new URL('../schema.sql', import.meta.url), 'utf8'))
     .split('\n').filter((line) => !line.trimStart().startsWith('--')).join('\n');
   assert.match(sql, /SQL SECURITY DEFINER/u);
@@ -266,7 +288,14 @@ test('SQL view preserves exact DA semantics and has no private projections or el
   assert.match(sql, /BINARY q\.customData = BINARY 'TRIXTER_DA_WARRIOR_CARRIER_V1'/u);
   assert.match(sql, /AND EXISTS \(/u);
   assert.match(sql, /LEFT JOIN guilds AS g ON g\.guildid = c\.guildid/u);
-  assert.doesNotMatch(sql, /\b(accounts|accountid|password|email|gm|banned)\b/iu);
+  assert.match(sql, /JOIN accounts AS a ON a\.id = c\.accountid/u);
+  assert.match(sql, /c\.gm = 0/u);
+  assert.match(sql, /a\.gm = 0/u);
+  assert.match(sql, /a\.banned = 0/u);
+  assert.match(sql, /economy\.nx_earned/u);
+  assert.match(sql, /dimension_key = 'nx_credit'/u);
+  assert.match(sql, /dimension_key = 'nx_prepaid'/u);
+  assert.doesNotMatch(sql, /\b(password|email|mPoints|SessionIP)\b/iu);
   assert.doesNotMatch(sql, /c\.level\s*[><=]/u);
   assert.doesNotMatch(sql, /CREATE OR REPLACE/u);
 });
@@ -275,8 +304,10 @@ const readerMetadata = () => ({
   identity: [{ validIdentity: 1, validSchema: 1, readOnly: 1 }],
   global: [{ privilegeType: 'USAGE', isGrantable: 'NO' }],
   schema: [], column: [], roles: [{ roleCount: 0 }],
-  table: [{ tableSchema: 'trixterms_test', tableName: 'trixter_public_characters_v1', privilegeType: 'SELECT', isGrantable: 'NO' }],
-  columns: ['internalId', 'world', 'name', 'level', 'exp', 'jobId', 'fame', 'guildName', 'isDemonAvenger'].map((columnName) => ({ columnName })),
+  table: [{ tableSchema: 'trixterms_test', tableName: 'trixter_public_rankings_v2', privilegeType: 'SELECT', isGrantable: 'NO' }],
+  columns: ['internalId', 'world', 'name', 'level', 'exp', 'jobId', 'fame', 'guildName',
+    'isDemonAvenger', 'currentMesos', 'expEarned', 'mesosEarned', 'currentNx', 'nxEarned',
+    'nxCreditEarned', 'nxPrepaidEarned'].map((columnName) => ({ columnName })),
 });
 
 test('grant metadata rejects broad access, inherited roles, wrong source and expanded view', () => {
@@ -290,7 +321,7 @@ test('grant metadata rejects broad access, inherited roles, wrong source and exp
     { schema: [{ privilegeType: 'SELECT' }] },
     { column: [{ privilegeType: 'SELECT' }] },
     { table: [{ tableSchema: 'trixterms_test', tableName: 'characters', privilegeType: 'SELECT', isGrantable: 'NO' }] },
-    { table: [{ tableSchema: 'trixterms_test', tableName: 'trixter_public_characters_v1', privilegeType: 'UPDATE', isGrantable: 'NO' }] },
+    { table: [{ tableSchema: 'trixterms_test', tableName: 'trixter_public_rankings_v2', privilegeType: 'UPDATE', isGrantable: 'NO' }] },
     { roles: [{ roleCount: 1 }] }, { columns: [...readerMetadata().columns, { columnName: 'private' }] },
   ]) assert.throws(() => assertReaderMetadata({ ...readerMetadata(), ...patch }, 'trixterms_test'), /boundary/u);
 });
@@ -306,7 +337,7 @@ test('read-only boundary checker probes denied base reads without reading rows o
   } };
   assert.deepEqual(await verifyReaderBoundary(pool, 'trixterms_test'),
     { readerGrantChecksPassed: true, baseTableReadsDenied: true, viewColumnsVerified: true });
-  assert.equal(calls.length, 10);
+  assert.equal(calls.length, 11);
   assert.ok(calls.slice(7).every((sql) => sql.includes('WHERE 1 = 0')));
   assert.ok(calls.every((sql) => !/SHOW GRANTS|mysql\.|SELECT \*/iu.test(sql)));
   index = 0;

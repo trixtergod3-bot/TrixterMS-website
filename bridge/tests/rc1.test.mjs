@@ -13,7 +13,9 @@ import { inspectQueryPlan } from '../src/query-plan.mjs';
 const token = 'test-only-fake-ServiceTokenForHttpChecks_123456789';
 const auth = { authorization: `Bearer ${token}` };
 const row = (id, patch = {}) => ({ internalId: id, world: 0, name: `Player${id}`,
-  level: 1, exp: '0', jobId: 0, fame: 0, guildName: null, isDemonAvenger: 0, ...patch });
+  level: 1, exp: '0', jobId: 0, fame: 0, guildName: null, isDemonAvenger: 0,
+  currentMesos: '0', expEarned: '0', mesosEarned: '0', currentNx: '0', nxEarned: '0',
+  nxCreditEarned: '0', nxPrepaidEarned: '0', ...patch });
 const initial = Date.parse('2026-09-13T00:00:00.000Z');
 const endpoints = ['/api/public/rankings', '/api/public/characters', '/api/public/stats', '/api/public/telemetry'];
 const aggregate = (patch = {}) => ({ version: 1, asOf: new Date(initial).toISOString(),

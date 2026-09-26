@@ -4,7 +4,10 @@ import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Radio, RefreshCw } from 'lucide-react';
-import type { PortalEnvelope, RankingsData } from '@/lib/portal/contracts';
+import type { PortalEnvelope, PublicRankingsData } from '@/lib/portal/contracts';
+import { RANKING_CLASS_KEYS, RANKING_CLASS_OPTIONS, RANKING_SORT_KEYS,
+  RANKING_SORT_OPTIONS, rankingSortOption } from '@/lib/portal/ranking-options';
+import type { RankingClass, RankingSort } from '@/lib/portal/ranking-options';
 import { EmptyState } from './shared';
 import { RankingTable } from './ranking-table';
 import styles from './live-rankings.module.css';
@@ -12,23 +15,10 @@ import styles from './live-rankings.module.css';
 const REFRESH_MS = 20_000;
 const MAX_STALE_MS = 120_000;
 const PAGE_SIZE = 50;
-const classOptions: [string, string][] = [
-  ['0', 'Beginner'], ['112', 'Hero'], ['paladin', 'Paladin'],
-  ['132', 'Dark Knight'], ['212', 'Fire / Poison Arch Mage'],
-  ['222', 'Ice / Lightning Arch Mage'], ['232', 'Bishop'],
-  ['312', 'Bowmaster'], ['322', 'Marksman'], ['412', 'Night Lord'],
-  ['422', 'Shadower'], ['434', 'Dual Blade'], ['512', 'Buccaneer'],
-  ['522', 'Corsair'], ['532', 'Cannoneer'], ['1112', 'Dawn Warrior'],
-  ['1212', 'Blaze Wizard'], ['1312', 'Wind Archer'], ['1412', 'Night Walker'],
-  ['1512', 'Thunder Breaker'], ['2112', 'Aran'], ['2218', 'Evan'],
-  ['2312', 'Mercedes'], ['3112', 'Demon Slayer'], ['demon-avenger', 'Demon Avenger'],
-  ['3212', 'Battle Mage'], ['3312', 'Wild Hunter'], ['3512', 'Mechanic'],
-];
-
 export interface RankingFilters {
-  sort: 'level' | 'fame';
+  sort: RankingSort;
   job?: string;
-  class?: 'demon-avenger' | 'paladin';
+  class?: RankingClass;
   page: number;
 }
 
@@ -52,7 +42,7 @@ function ageLabel(asOf: string, now: number | null) {
 }
 
 export function LiveRankings({ initialResponse, filters }: {
-  initialResponse: PortalEnvelope<RankingsData>;
+  initialResponse: PortalEnvelope<PublicRankingsData>;
   filters: RankingFilters;
 }) {
   const router = useRouter();
@@ -97,8 +87,9 @@ export function LiveRankings({ initialResponse, filters }: {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error('Rankings unavailable');
-        const result: PortalEnvelope<RankingsData> = await response.json();
+        const result: PortalEnvelope<PublicRankingsData> = await response.json();
         if (!['live', 'stale'].includes(result.status) || !result.data || !Array.isArray(result.data.entries)
+          || result.data.sort !== filters.sort
           || result.data.page !== filters.page || result.data.pageSize !== PAGE_SIZE
           || !Number.isSafeInteger(result.data.total) || (result.data.total ?? -1) < 0
           || !result.asOf || !Number.isFinite(Date.parse(result.asOf))
@@ -133,7 +124,7 @@ export function LiveRankings({ initialResponse, filters }: {
       controller?.abort();
     };
   // The page gives each applied query a fresh component key. A refresh retains its last successful rows.
-  }, [query, filters.page, refreshKey, initialResponse]);
+  }, [query, filters.page, filters.sort, refreshKey, initialResponse]);
 
   const visibleSnapshot = snapshot?.asOf && (now === null || now - Date.parse(snapshot.asOf) <= MAX_STALE_MS) ? snapshot : null;
   const data = visibleSnapshot?.data;
@@ -147,21 +138,19 @@ export function LiveRankings({ initialResponse, filters }: {
     <form className="search-form" action="/rankings" onSubmit={(event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      const rawClass = form.get('job');
+      const rawClass = form.get('class');
       const selected = typeof rawClass === 'string' ? rawClass : '';
+      const rawSort = form.get('sort');
       const next: RankingFilters = {
-        sort: form.get('sort') === 'fame' ? 'fame' : 'level', page: 1,
-        ...(selected === 'demon-avenger' || selected === 'paladin' ? { class: selected } : selected ? { job: selected } : {}),
+        sort: typeof rawSort === 'string' && RANKING_SORT_KEYS.has(rawSort) ? rawSort as RankingSort : 'level', page: 1,
+        ...(RANKING_CLASS_KEYS.has(selected) ? { class: selected as RankingClass } : {}),
       };
       startNavigation(() => router.push(`/rankings?${queryString(next)}`, { scroll: false }));
     }}>
-      <label className="field">Rank by<select name="sort" defaultValue={filters.sort}><option value="level">Level / EXP</option><option value="fame">Fame</option></select></label>
-      <label className="field">Class<select name="job" defaultValue={selectedClass}>
+      <label className="field">Rank by<select name="sort" defaultValue={filters.sort}>{RANKING_SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      <label className="field">Class<select name="class" defaultValue={selectedClass}>
         <option value="">All classes</option>
-        {selectedClass && !classOptions.some(([value]) => value === selectedClass) && <option value={selectedClass}>Job {selectedClass}</option>}
-        {classOptions.map(([value, label]) => <option key={value} value={value}>{label}{/^\d+$/.test(value)
-          ? value === '0' ? ' (Explorer)' : value === '2218' ? ' (10th growth)' : value.length === 4 && value.startsWith('1') ? ' (3rd job)' : ' (4th job)'
-          : ''}</option>)}
+        {RANKING_CLASS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select></label>
       <button className="button button-gold" type="submit" disabled={navigating}>{navigating ? 'Loading…' : 'Apply filters'}</button>
     </form>
@@ -184,7 +173,7 @@ export function LiveRankings({ initialResponse, filters }: {
         <p className={styles.summary}>{total?.toLocaleString('en-US')} {filters.job || filters.class ? 'matching characters' : 'characters'}
           {data.entries.length > 0 && <> · Showing {((filters.page - 1) * PAGE_SIZE + 1).toLocaleString('en-US')}–{((filters.page - 1) * PAGE_SIZE + data.entries.length).toLocaleString('en-US')}</>}
         </p>
-        {data.entries.length > 0 ? <RankingTable entries={data.entries} /> : <EmptyState title={filters.page > 1 ? 'No characters on this page.' : 'The hall is waiting for its heroes.'}>
+        {data.entries.length > 0 ? <RankingTable entries={data.entries} sort={filters.sort} /> : <EmptyState title={filters.page > 1 ? 'No characters on this page.' : 'The hall is waiting for its heroes.'}>
           {filters.page > 1 ? 'The standings have changed. Return to the first page to see the latest rankings.' : filters.job || filters.class ? 'No characters match this class yet. Try viewing all classes.' : 'New characters will appear here automatically, starting at Level 1.'}
         </EmptyState>}
       </>}
@@ -196,6 +185,6 @@ export function LiveRankings({ initialResponse, filters }: {
       <span>Page {filters.page}{pages !== null && <> of {pages}</>}</span>
       {pages !== null && filters.page < pages && <Link href={`/rankings?${queryString({ ...filters, page: filters.page + 1 })}`} scroll={false}>Next</Link>}
     </nav>
-    <p className="data-note">{filters.sort === 'fame' ? 'Fame rankings use fame first, then level and current EXP.' : 'Level rankings use level, then current EXP.'} Ties use a stable server order. Every level is included. Updates automatically about every 20 seconds.</p>
+    <p className="data-note">{filters.sort === 'level' ? 'Level rankings use level, then current EXP.' : filters.sort === 'fame' ? 'Fame rankings use fame first, then level and current EXP.' : `${rankingSortOption(filters.sort).label} rankings use the recorded total first, then level and current EXP.`} Ties use a stable server order. Staff and banned accounts are excluded. Updates automatically about every 20 seconds.</p>
   </>;
 }

@@ -1,5 +1,10 @@
 # Rankings and Telemetry RC1
 
+**V2 update:** [Website telemetry rankings V2](WEBSITE_TELEMETRY_RANKINGS_V2.md)
+supersedes this document for eligibility, class filters, ranking sorts, SQL
+view/grant details, and NX handling. This RC1 document remains provenance for
+the original bridge cache/runtime contract.
+
 This candidate extends the approved website design from `codex/live-rankings-telemetry-01a097bc` (handoff `feb551643cd6803e445cac7c3d2c578624510ce6`). It changes the public data path and freshness behavior. It does not deploy the site, change gameplay, or modify the patch feed. Final test and live evidence are in the [lane handoff](coordination/chats/website-telemetry-rc1-01a097ee.md).
 
 ## Boundary
