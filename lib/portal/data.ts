@@ -1,5 +1,5 @@
 import { TELEMETRY_KEYS } from "./contracts.ts";
-import type { AchievementsData, CharacterAchievementsData, PortalEnvelope, PortalQuery } from "./contracts.ts";
+import type { AchievementsData, CharacterAchievementsData, PortalEnvelope, PortalQuery, StatusData } from "./contracts.ts";
 import { isPublicPath, readPublic, PublicRateLimitError } from "./public-data.ts";
 import { RANKING_CLASS_KEYS, RANKING_SORT_KEYS } from "./ranking-options.ts";
 
@@ -94,11 +94,42 @@ function characterAchievements(value: Obj): CharacterAchievementsData {
   return { name: name(value.name), catalogVersion: integer(value.catalogVersion, 1), points, totalPoints, achievements, recentUnlocks };
 }
 
+function publicStatus(value: Obj) {
+  const rates = object(value.rates);
+  const rate = (input: unknown) => {
+    if (typeof input !== "number" || !Number.isFinite(input) || input < 0 || input > 1000000) throw new Error("Invalid rate");
+    return input;
+  };
+  const publicLabel = (input: unknown) => {
+    const label = string(input, 64);
+    if (!label.trim()) throw new Error("Empty public label");
+    return label;
+  };
+  const result: StatusData = {
+    online: nullable(value.online, boolean), playersOnline: nullable(value.playersOnline, integer),
+    version: nullable(value.version, (input) => string(input, 40)),
+    rates: { exp: nullable(rates.exp, rate), meso: nullable(rates.meso, rate), drop: nullable(rates.drop, rate) },
+  };
+  if (value.world !== undefined) result.world = nullable(value.world, (input) => {
+    const world = object(input);
+    return { id: integer(world.id, 0, 255), name: nullable(world.name, publicLabel) };
+  });
+  if (value.channels !== undefined) result.channels = nullable(value.channels, (input) => {
+    const channels = list(input, (row) => {
+      const channel = object(row);
+      return { id: integer(channel.id, 1, 255), name: nullable(channel.name, publicLabel), online: nullable(channel.online, boolean), playersOnline: nullable(channel.playersOnline, integer) };
+    }, 100);
+    if (new Set(channels.map((channel) => channel.id)).size !== channels.length) throw new Error("Duplicate public channel");
+    return channels;
+  });
+  return result;
+}
+
 /** Project every backend response through an explicit public field allowlist. */
 export function validatePortalData(kind: Kind, value: unknown): unknown {
   const v = object(value);
   switch (kind) {
-    case "status": { const rates = object(v.rates); const rate = (x: unknown) => { if (typeof x !== "number" || !Number.isFinite(x) || x < 0 || x > 1000000) throw new Error("Invalid rate"); return x; }; return { online: nullable(v.online, boolean), playersOnline: nullable(v.playersOnline, integer), version: nullable(v.version, (x) => string(x, 40)), rates: { exp: nullable(rates.exp, rate), meso: nullable(rates.meso, rate), drop: nullable(rates.drop, rate) } }; }
+    case "status": return publicStatus(v);
     case "rankings": {
       if (typeof v.sort !== "string" || !RANKING_SORT_KEYS.has(v.sort)) throw new Error("Invalid ranking sort");
       const metricSort = v.sort !== "level" && v.sort !== "fame";
@@ -162,7 +193,9 @@ function unavailable<T>(message = "Live data is not available yet."): PortalEnve
 /** Server-only reader, also used by the same-origin GET proxy. No user cookies or credentials forwarded. */
 export async function readPortal<T>(path: string, query: PortalQuery = {}): Promise<PortalEnvelope<T>> {
   if (typeof window !== "undefined") throw new Error("Portal reader requires the server");
-  if (isPublicPath(path)) {
+  // Production rankings require the authenticated public reader. Local legacy/test
+  // backends retain their original contracts until a bridge token is configured.
+  if (isPublicPath(path) && (process.env.TRIXTER_READ_API_TOKEN || process.env.NODE_ENV === "production")) {
     try { return await readPublic<T>(path, query); }
     catch (error) { if (error instanceof PublicRateLimitError) return unavailable<T>("Live data is temporarily busy."); throw error; }
   }

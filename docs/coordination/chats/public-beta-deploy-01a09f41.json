@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a09f41-06c9-71d3-95bf-6834da5739e5",
+  "chatSlug": "public-beta-deploy-01a09f41",
+  "chatTitle": "Deploy Public Beta download",
+  "task": "Deploy current website main to Hostinger and verify public download and preserved beta feed",
+  "status": "BLOCKED",
+  "localWorktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/website-public-beta-deploy-01a09f41",
+  "branch": "codex/public-beta-deploy-01a09f41",
+  "localHead": "77aafe572151e8660bb7afcb22dbf41feaa3cc6d",
+  "publicationBranch": "codex/public-beta-deploy-01a09f41",
+  "latestCommit": "77aafe572151e8660bb7afcb22dbf41feaa3cc6d",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": false,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "app/download/page.tsx",
+    "tests/download-render.test.ts",
+    "tools/verify-download-flow.mjs"
+  ],
+  "dependencies": [
+    "Hostinger existing Git integration reconnection",
+    "Published sequence 4 launcher metadata",
+    "External PC native manual login and server LOGIN_PASSWORD evidence"
+  ],
+  "collisionRisks": [
+    "main lacks the current production candidate; preserve 7abc5c38 changes when promoting",
+    "Independent patch hostname must remain unchanged",
+    "Other server and launcher lanes own their current source and QA"
+  ],
+  "remainingWork": [
+    "Reconnect only website repository to existing Hostinger account after scoped approval",
+    "Promote tested production-preserving checkpoint to main and deploy using Node 24, root ., npm ci --include=dev, npm run build, npm start",
+    "Set reviewed public TRIXTER_RELEASE_DOWNLOADS_JSON without changing other environment settings",
+    "Verify actual production routes and download clicks, then repeat patch checks",
+    "Owner external-PC install, native manual login, LOGIN_PASSWORD and repeated PLAY"
+  ],
+  "ownerQa": [
+    "External PC from public website through install/update/native manual login; server operator confirms LOGIN_PASSWORD without credentials in evidence"
+  ],
+  "sourceCoverage": "Website-only merge preserves observed production commit 7abc5c38 and required main 5775e260; only download route, focused tests and download check differ from production. No game code, assets, patch feed or runtime changes.",
+  "evidence": [
+    "Hostinger current production 7abc5c3882370a50232d12ab82017083881a09d0 on codex/web-production-candidate-v1, Node 24 Next.js; Git disconnected",
+    "Git fetch confirms origin/main 5775e260707709b54e64689c56a9ee42d63a52f8",
+    "QA ZIP downloaded; SHA256 78107EF1E9F732F357DB24AEBBF5FBFA621465420AD4E08353A25A61BD749293",
+    "Patch sequence 4 ECDSA signature valid; manifest saved before changes",
+    "58 website tests passed",
+    "Published source checkpoint 77aafe572151e8660bb7afcb22dbf41feaa3cc6d verified by ls-remote; main unchanged",
+    "58 tests passed, then all three download tests passed after adding QA link test; build/typecheck/lint successful",
+    "Security scan: 112 source text files and 55 browser bundles, zero findings",
+    "16 production checks and 3 download flows at 1440/390/320 pixels passed locally",
+    "Public launcher exact size 74161935 and SHA256 6ED36074CF96762ECCF2EC4799D0B95A6E9A8FEC6D3F257E2EFD9D0D4EF9B0AF verified",
+    "Patch health ok, signature valid, sample payload SHA valid, byte range HTTP 206, manifest hash unchanged C7CDE54CD482B87F4381759CA038C98FE41B9E09E81A57783B9EDC21F15B3395",
+    "Current website /beta/manifest.json is 404; established functional feed is the independent floralwhite-stinkbug-872547.hostingersite.com/beta origin",
+    "Requested QA ZIP contains diagnostics requiring existing game files, not a clean-PC installer"
+  ],
+  "lastUpdated": "2026-09-14T09:41:50.9664054Z",
+  "lane": "website-production",
+  "objective": "Deploy current website main to Hostinger and verify public download and preserved beta feed",
+  "worktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/website-public-beta-deploy-01a09f41",
+  "state": "blocked",
+  "currentAction": "Prepared and tested source checkpoint; production remains unchanged pending repository-only reconnection approval",
+  "lastCompleted": "",
+  "blocker": "Automatic approval review rejected Hostinger Connect Git provider: explicit account-specific repository access authorization required. Scoped owner question pending.",
+  "filesChanged": [
+    "app/download/page.tsx",
+    "tests/download-render.test.ts",
+    "tools/verify-download-flow.mjs"
+  ],
+  "qaClient": "",
+  "qaLauncher": "local/public-beta-deploy-01a09f41/public-launcher.exe",
+  "qaPort": "",
+  "runtime": "Local website preview 127.0.0.1:4339; production unchanged at 7abc5c38",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "Approve existing Hostinger account repository-only Git reconnection in the pending question",
+  "nextAction": "Reconnect provider after approval; configure reviewed metadata and deploy tested main candidate"
+}

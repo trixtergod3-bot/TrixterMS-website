@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a0a722-8a35-77b1-bb18-c9f376fb8830",
+  "chatSlug": "open-public-registration-01a0a722",
+  "chatTitle": "Open public registration safely",
+  "task": "Open secure public website registration and verify native login",
+  "status": "BLOCKED",
+  "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-open-public-registration-01a0a722",
+  "branch": "codex/open-public-registration-01a0a722",
+  "localHead": "9e861a87b5021c25e92b62e68aad06de232590b6",
+  "publicationBranch": "codex/open-public-registration-01a0a722",
+  "latestCommit": "9e861a87b5021c25e92b62e68aad06de232590b6",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": false,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "app/api/register/route.ts",
+    "components/portal/registration-form.tsx",
+    "lib/portal/registration.ts",
+    "tests/registration.test.ts",
+    "docs/REGISTRATION_AND_RELEASE_INTEGRATION.md",
+    "registration/",
+    "server/src/handling/login/AccountRegistrationService.java",
+    "server/src/handling/login/AccountRegistrationServiceSelfTest.java",
+    "server/src/handling/login/RegistrationGatewayWriter.java"
+  ],
+  "dependencies": [
+    "Hostinger Git provider authorization and production deployment access",
+    "Verified website trusted client-IP ingress"
+  ],
+  "collisionRisks": [
+    "Before deployment re-read live Hostinger SHA and newest website main; preserve working sequence-10 downloads and independent feed",
+    "Do not replace shared game JAR from dirty Documents checkout; gateway uses separately compiled worker classes"
+  ],
+  "remainingWork": [
+    "Authorize Hostinger GitHub connection and deploy the reviewed website branch",
+    "Verify Hostinger trusted client-IP ingress before enabling the website route",
+    "Provision limited writer and additive rate table; back up production configuration",
+    "Deploy service and set explicit alternate-writer disabled flags; verify effective runtime policy",
+    "Deploy matching website preserving downloads and independent patch feed",
+    "Controlled live registration and native LOGIN_PASSWORD verification"
+  ],
+  "ownerQa": [
+    "After HTTPS activation: one fresh account registered through website, exactly one normal row, official launcher manual credentials and observed LOGIN_PASSWORD"
+  ],
+  "sourceCoverage": "Website/gateway checkpoint 5afe006af8482e3aadc2928b9630d956db06248e and Java writer checkpoint ee3411c5d81b973900b105e036d0c3a513f350af; no binaries, secrets, databases, account identifiers, runtime deployment or main implementation merge",
+  "evidence": [
+    "66 website tests passed",
+    "Website build/typecheck/lint passed",
+    "132 source files and 55 browser bundles security scan passed",
+    "Website and gateway production dependency audit: zero vulnerabilities",
+    "Four gateway test groups passed",
+    "Java service compiled and strengthened self-test passed",
+    "Isolated real database integration: Java writer, normal defaults, case-only duplicates, five duplicate races, persistent IP/name limits, website handler -> gateway -> database passed",
+    "Live download page displays both canonical sequence-10 downloads",
+    "Independent current.json and health.txt HTTP200; health ok",
+    "Game writer checkpoint ee3411c5d81b973900b105e036d0c3a513f350af verified remotely",
+    "Hostinger DNS backup recorded; additive register-gateway A record and router forwarding applied; runtime backup, least-privilege DB writer, loopback gateway and Caddy TLS proxy staged with registration disabled",
+    "Public gateway hostname reaches TLS proxy; /api/register returns kill-switch 503 and other paths 404"
+  ],
+  "lastUpdated": "2026-09-16T02:20:00.0000000Z",
+  "lane": "public-registration",
+  "objective": "Open secure public website registration and verify native login",
+  "worktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\website-open-public-registration-01a0a722",
+  "state": "blocked",
+  "currentAction": "Gateway and TLS proxy staged safely; Hostinger dashboard still reports Git provider not connected",
+  "lastCompleted": "Gateway source and Java worker checkpoints pushed and exact remote SHAs verified",
+  "blocker": "Hostinger is signed in through delegated admin access but Git provider remains disconnected; the Connect GitHub action did not open an authorization flow in the in-app browser. Website deployment and production environment variables cannot proceed until the owner authorizes the repository connection. Registration remains disabled.",
+  "filesChanged": [
+    "app/api/register/route.ts",
+    "components/portal/registration-form.tsx",
+    "lib/portal/registration.ts",
+    "tests/registration.test.ts",
+    "docs/REGISTRATION_AND_RELEASE_INTEGRATION.md",
+    "registration/",
+    "server/src/handling/login/AccountRegistrationService.java",
+    "server/src/handling/login/AccountRegistrationServiceSelfTest.java",
+    "server/src/handling/login/RegistrationGatewayWriter.java"
+  ],
+  "qaClient": "",
+  "qaLauncher": "",
+  "qaPort": "",
+  "runtime": "F:\\TRITER MS\\single-pc-runtime",
+  "publiclyDeployed": false,
+  "ownerActionRequired": "In Hostinger, choose Connect Git provider -> Connect GitHub for trixterms.com and authorize access to the intended TrixterMS website repository, then return to the deployment dashboard",
+  "nextAction": "After GitHub authorization, deploy the reviewed website branch, configure secrets only in Hostinger environment settings, verify trusted ingress, then run controlled registration and native LOGIN_PASSWORD QA",
+  "gameWriterCheckpoint": "ee3411c5d81b973900b105e036d0c3a513f350af",
+  "gameWriterBranch": "codex/registration-writer-01a0a722"
+}

@@ -1,7 +1,16 @@
 import { PageHero } from '@/components/shared/page-hero';
-import { DataNote } from '@/components/portal/shared';
+import { WorldStatusPanel } from '@/components/portal/world-status';
 import { readPortal } from '@/lib/portal/data';
 import type { StatusData } from '@/lib/portal/contracts';
 export const dynamic='force-dynamic';
 export const metadata={title:'Server status'};
-export default async function Status(){const result=await readPortal<StatusData>('/api/status');const s=result.data;return <main><PageHero eyebrow="THE WORLD AT A GLANCE" title="World status." description="Current availability, population and rates from the public world feed."/><section className="shell portal-section"><DataNote response={result}/><div className="stat-grid">{[['Server',s?.online===true?'Online':s?.online===false?'Offline':'Unavailable'],['Players online',s?.playersOnline??'—'],['Version',s?.version??'GMS v111.1'],['Rates',s?'See below':'Unavailable']].map(([label,value])=><div className="stat-tile" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div><div className="portal-panel"><h2>World rates</h2><div className="portal-three-grid">{(['exp','meso','drop'] as const).map(key=><div className="stat-tile" key={key}><span>{key==='exp'?'EXP':key==='meso'?'Mesos':'Drop'}</span><strong>{s?.rates[key]===null||s?.rates[key]===undefined?'—':s.rates[key]+'×'}</strong></div>)}</div><p>Rates can change with the active world configuration. If the feed is unavailable, the portal leaves these values blank.</p></div>{!s&&<div className="portal-panel"><h3>The world feed is not connected.</h3><p>This does not mean the game server is offline. Live status and online player counts will appear once fresh server data is available.</p></div>}</section></main>}
+export default async function Status() {
+  const result = await readPortal<StatusData>('/api/status');
+  return (
+    <main>
+      <PageHero eyebrow="THE WORLD AT A GLANCE" title="World status."
+        description="Follow the world, find a channel, and see the current rates." />
+      <section className="shell portal-section"><WorldStatusPanel response={result} /></section>
+    </main>
+  );
+}

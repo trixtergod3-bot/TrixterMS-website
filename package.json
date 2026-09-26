@@ -7,10 +7,10 @@
     "node": ">=22.13.0 <25"
   },
   "scripts": {
-    "dev": "next dev --hostname 127.0.0.1 --port 4315",
+    "dev": "next dev --hostname 127.0.0.1 --port 4316",
     "build": "next build --webpack",
     "start": "next start",
-    "preview": "next start --hostname 127.0.0.1 --port 4315",
+    "preview": "next start --hostname 127.0.0.1 --port 4316",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",

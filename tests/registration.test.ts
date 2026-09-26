@@ -4,7 +4,7 @@ import { getRegistrationAvailability, handleRegistrationRequest, RegistrationRat
 import { APPROVED_MAPLE_EXECUTABLE_SHA256, getPublicIntegrations, validateDiscordInvite, validateReleaseDownloads } from '../lib/portal/integrations.ts';
 
 // Synthetic inputs only; the test transport never reaches a network or database.
-const input = { username: 'Fixture42', password: 'Fixture!42', passwordConfirmation: 'Fixture!42', website: '' };
+const input = { username: 'Fixture42', password: 'Fixture!42', passwordConfirmation: 'Fixture!42' };
 const env = { NODE_ENV: 'test', TRIXTER_SITE_URL: 'http://localhost:4311', TRIXTER_REGISTRATION_URL: 'http://localhost:9999/register',
   TRIXTER_REGISTRATION_ENABLED: 'true', TRIXTER_REGISTRATION_GATEWAY_TOKEN: 'test-only-gateway-'.repeat(3), TRIXTER_REGISTRATION_CSRF_SECRET: 'test-only-csrf-'.repeat(3) };
 const now = 1_800_000_000_000;
@@ -22,13 +22,14 @@ async function session(overrides: Record<string, string> = {}) {
   return { settings, dependencies, request, result, cookie };
 }
 
-void test('validation matches native account constraints and rejects privilege or honeypot fields', () => {
+void test('validation matches native account constraints and rejects every extra field', () => {
   assert.ok(validateRegistration(input));
   for (const username of ['abc', 'a'.repeat(14), 'two words', 'äbcde', 'abc_12', 'abc12\n'])
     assert.equal(validateRegistration({ ...input, username }), null);
   for (const password of ['short', 'a'.repeat(33), 'abc defgh', 'abcdefgh\n', 'abcdefgä'])
     assert.equal(validateRegistration({ ...input, password, passwordConfirmation: password }), null);
   assert.equal(validateRegistration({ ...input, passwordConfirmation: 'different' }), null);
+  assert.equal(validateRegistration({ ...input, website: '' }), null);
   assert.equal(validateRegistration({ ...input, website: 'bot' }), null);
   assert.equal(validateRegistration({ ...input, gm: 1 }), null);
   assert.equal(validateRegistration({ ...input, email: 'not-supported@example.invalid' }), null);
@@ -41,18 +42,30 @@ void test('missing configuration and unreviewed production abuse control fail cl
   assert.equal(result.status, 503);
 });
 
+void test('unsupported methods and compressed bodies stay inside the registration status allowlist', async () => {
+  for (const method of ['PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']) {
+    const result = await handleRegistrationRequest(new Request('https://trixterms.com/api/register', { method }), env);
+    assert.equal(result.status, 400);
+    assert.deepEqual(await result.json(), { code: 'INVALID_REGISTRATION' });
+  }
+  const context = await session();
+  const result = await handleRegistrationRequest(context.request(input, { 'Content-Encoding': 'gzip' }), env,
+    { ...context.dependencies, fetch: async () => assert.fail('compressed request reached writer') });
+  assert.equal(result.status, 400);
+});
+
 void test('cross-origin, missing origin, and forged/expired CSRF cannot reach the writer', async () => {
   const context = await session();
   const fetch: typeof globalThis.fetch = async () => { throw new Error('must not forward'); };
   const rejectedHeaders: Record<string, string>[] = [{ Origin: 'https://attacker.invalid' }, { 'X-CSRF-Token': 'forged' }, { Cookie: '' }, { 'Sec-Fetch-Site': 'cross-site' }];
   for (const headers of rejectedHeaders) {
     const result = await handleRegistrationRequest(context.request(input, headers), env, { ...context.dependencies, fetch });
-    assert.equal(result.status, 403);
+    assert.equal(result.status, 400);
   }
   const expired = await session();
-  assert.equal((await handleRegistrationRequest(expired.request(), env, { ...expired.dependencies, now: () => now + 1_800_001, fetch })).status, 403);
+  assert.equal((await handleRegistrationRequest(expired.request(), env, { ...expired.dependencies, now: () => now + 1_800_001, fetch })).status, 400);
   const missing = await session(); const request = missing.request(); request.headers.delete('Origin');
-  assert.equal((await handleRegistrationRequest(request, env, { ...missing.dependencies, fetch })).status, 403);
+  assert.equal((await handleRegistrationRequest(request, env, { ...missing.dependencies, fetch })).status, 400);
 });
 
 void test('bounded JSON and content type are enforced before upstream forwarding', async () => {
@@ -92,6 +105,48 @@ void test('production requires authenticated proxy address and secure CSRF cooki
   assert.equal(legitimate.status, 200);
   assert.match(legitimate.headers.get('set-cookie') ?? '', /^__Host-trixter-registration-csrf=/);
   assert.match(legitimate.headers.get('set-cookie') ?? '', /HttpOnly; SameSite=Strict; Max-Age=1800; Secure/);
+});
+
+void test('registration shares canonical origin normalization with metadata and rejects the www request origin', async () => {
+  const settings = { ...env, NODE_ENV: 'production', TRIXTER_SITE_URL: 'https://www.trixterms.com/',
+    TRIXTER_REGISTRATION_URL: 'https://registration.example.invalid/create',
+    TRIXTER_REGISTRATION_ABUSE_GUARD: 'reviewed-distributed-gateway',
+    TRIXTER_REGISTRATION_PROXY_SECRET: 'test-only-proxy-'.repeat(3) };
+  const headers = { Origin: 'https://trixterms.com',
+    'X-Trixter-Edge-Token': settings.TRIXTER_REGISTRATION_PROXY_SECRET,
+    'X-Trixter-Client-IP': '203.0.113.43' };
+  const dependencies = { limiter: new RegistrationRateLimiter(), now: () => now };
+  const start = await handleRegistrationRequest(new Request('https://trixterms.com/api/register', { headers }), settings, dependencies);
+  assert.equal(start.status, 200);
+  const body = await start.json();
+  const cookie = start.headers.get('set-cookie')?.split(';')[0] ?? '';
+  let calls = 0;
+  const transport = { ...dependencies, fetch: async () => {
+    calls++;
+    return Response.json({ code: 'ACCOUNT_CREATED' }, { status: 201 });
+  } };
+  const post = (origin: string) => new Request('https://trixterms.com/api/register', { method: 'POST',
+    headers: { ...headers, Origin: origin, 'Content-Type': 'application/json', 'X-CSRF-Token': body.csrfToken, Cookie: cookie },
+    body: JSON.stringify(input) });
+  assert.equal((await handleRegistrationRequest(post('https://www.trixterms.com'), settings, transport)).status, 400);
+  assert.equal(calls, 0);
+  assert.equal((await handleRegistrationRequest(post('https://trixterms.com'), settings, transport)).status, 201);
+  assert.equal(calls, 1);
+});
+
+void test('registration fails closed for missing or invalid production site origins', () => {
+  const settings = { ...env, NODE_ENV: 'production',
+    TRIXTER_REGISTRATION_URL: 'https://registration.example.invalid/create',
+    TRIXTER_REGISTRATION_ABUSE_GUARD: 'reviewed-distributed-gateway',
+    TRIXTER_REGISTRATION_PROXY_SECRET: 'test-only-proxy-'.repeat(3) };
+  const credentialOrigin = new URL('https://trixterms.com');
+  credentialOrigin.username = 'name';
+  credentialOrigin.password = 'secret';
+  for (const origin of [undefined, '', 'https://localhost', 'https://127.0.0.1',
+    'https://trixterms.com/portal', 'https://trixterms.com?', 'https://trixterms.com#',
+    'https://trixterms.com:4315', credentialOrigin.href]) {
+    assert.deepEqual(getRegistrationAvailability({ ...settings, TRIXTER_SITE_URL: origin }), { enabled: false });
+  }
 });
 
 void test('upstream failures, unknown status, and mismatched codes are generic and never retried', async () => {

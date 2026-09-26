@@ -17,16 +17,15 @@ Domain attribute. The token has a random 256-bit value, timestamp, and HMAC.
 {
   "username": "Example42",
   "password": "<entered password>",
-  "passwordConfirmation": "<same entered password>",
-  "website": ""
+  "passwordConfirmation": "<same entered password>"
 }
 ```
 
 The browser also sends `X-CSRF-Token`. The route requires an exact allowed Origin,
 rejects cross-site Fetch Metadata, verifies the signed token and matching cookie,
 accepts only JSON, limits request and upstream response bodies to 4 KiB, and bounds
-body reads and upstream fetches to eight seconds. The hidden `website` honeypot
-must be empty. Unknown fields, including GM, email, PIC, account ID, and currency
+body reads and upstream fetches to eight seconds. Compressed bodies are rejected.
+Unknown fields, including website, GM, email, PIC, account ID, and currency
 fields, are rejected. Usernames are 4–13 ASCII letters/digits; passwords are 8–32
 ASCII characters from `!` through `~`, excluding spaces. Passwords are not trimmed
 or normalized. Confirmation must match exactly.
@@ -50,7 +49,7 @@ The upstream must return a JSON `code` matching its HTTP status:
 The portal returns only this allowlisted code. It never forwards an account ID,
 login token, response cookie, private upstream error, or arbitrary response field.
 Unrecognized status/code combinations, redirects, timeouts, and failed fetches
-become 503. Origin/CSRF failures return 403 `REQUEST_REJECTED`.
+become 503. Origin/CSRF failures and unsupported methods return 400 `INVALID_REGISTRATION`.
 
 ## Server-only configuration
 
@@ -211,7 +210,7 @@ required in their own backend integrations before enabling live actions.
 ## Verification and next milestone
 
 `node --test --experimental-strip-types tests/registration.test.ts` exercises
-native validation, extra privilege fields, honeypot rejection, origin/CSRF/expiry,
+native validation, extra privilege fields, strict three-field validation, origin/CSRF/expiry,
 body/content limits, default/production configuration gates, spoofed proxy headers,
 secure cookies, response projection, upstream failure, non-resetting bounded
 limits, release metadata, and Discord/provider defaults. It uses synthetic input
