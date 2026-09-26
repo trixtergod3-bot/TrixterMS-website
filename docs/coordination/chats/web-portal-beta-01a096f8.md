@@ -1,33 +1,30 @@
 # Build TrixterMS beta portal
 
-Status: **OWNER_QA**. Website implemented, tested and locally verified; owner acceptance and deployment are **false**.
+Exact task title retained for coordination. Current scope: **TRIXTERMS final beta visual pass**, 2026-09-12.
+
+Status: **OWNER_QA — ready for OWNER VISUAL ACCEPTANCE**. Implemented, tested and locally verified; owner acceptance and deployment remain false.
 
 - Repository: `trixtergod3-bot/TrixterMS-website`
-- Branch: `codex/web-portal-beta-v1`
-- Verified source checkpoint: `02061cfaef93b3f55c1c8053c1fc7b2a0a83b9c7`
 - Worktree: `C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/web-portal-beta-v1`
-- Machine-readable record: [web-portal-beta-01a096f8.json](web-portal-beta-01a096f8.json)
+- Verified baseline main: `81856c608dab33346f8f915dcd5219c893f09e01`
+- Candidate branch: `codex/website-final-beta-visual-pass`
+- Verified source checkpoint: `0c8e2f41212af8d7893f3748dbffc7a504c6cf9d`
+- [Machine-readable record](web-portal-beta-01a096f8.json) and [complete eight-part report / exact file list](../../FINAL_BETA_VISUAL_PASS.md)
 
-## Delivered and preserved
+## Changes and evidence
 
-All 12 requested primary routes plus useful secondary pages are implemented on Next.js 16.3.3 / React 19.2.8. Original artwork, responsive navigation, rankings and historical competition filters, staged achievement browsing, character views, database/FM forms, guarded registration, validated download metadata and 11 bounded GET API contracts are included. Live data and optional providers remain explicitly unavailable or disabled until configured; synthetic player fixtures are test-only.
+Public brand copy, metadata, social previews, accessibility labels and the continuous wordmark use exactly **TRIXTERMS**. Technical identifiers, routes, APIs, environment names and form behavior are unchanged. The favicon matches teal/gold. Small-screen fixes keep PLAY NOW on one line and give Explorer Remaster/Demon Avenger text the full panel width. Original floating-village artwork, hero crops, desktop/tablet layout and working portal functions are preserved.
 
-The selected V2 source and three other website candidates remain intact. Only 94 website-owned files entered the new root commit. No game history, proprietary client or WZ files, extracted catalogs, database contents, credentials or private logs were published. The authoritative game checkout and beta runtime were not changed.
+`npm ci`, typecheck, lint, all 45 tests, production build and security scan pass. The clean install reports zero vulnerabilities. The final browser suite passes 120 route/viewport checks and 120 branding checks at 1440, 1024, 768, 390 and 320 pixels; 26 links, 10 interactions and one favicon pass, with zero page/console errors. Screenshots confirm readable hero/CTA, class panels and unavailable states. Security scanning covers 99 publishable text files and 53 browser bundles with zero findings. The initial locked Next.js install was resolved by stopping only the website preview; all required final checks passed.
 
-## Verification and evidence
+Local production preview remains `http://127.0.0.1:4315`. Screenshot/report files remain ignored in `local/qa/`. The pre-change Git bundle in `local/backups/before-final-visual-pass-81856c6.bundle` was verified; SHA-256 `AF0D2B2177AD7E3DB148E9863CA1EEE5AA66798044EA2EF08A52548724B3F7D1`. Hero SHA-256 remains `9B278D9EA860AA93021A66A15B119B7A54E4B92B6399A12C399E4A90F5F9BF04`.
 
-Production build, typecheck and lint passed. All 45 tests passed. The final production browser run passed 120 route/viewport checks at five widths, 26 internal links and 10 interaction/query/API checks with zero browser errors. All 11 public GET routes and disabled registration fail closed without a backend. Source and 53 generated browser bundles scanned with no findings; the handoff documents were checked separately. [VERIFICATION.md](../../VERIFICATION.md) gives the exact scope and limitations.
+## Blockers, owner QA and next step
 
-Screenshots and the browser report remain ignored in `local/qa/`. The local image-generation master is not published; the original 1672x941 WebP hero is 240,778 bytes, SHA-256 `9B278D9EA860AA93021A66A15B119B7A54E4B92B6399A12C399E4A90F5F9BF04`. [ART_PROVENANCE.md](../../ART_PROVENANCE.md) records the prompt and source hash.
+The visual candidate is ready for owner review. Live reads, registration, downloads, Discord and providers remain unavailable/disabled until real configuration and reviewed services exist. No fake production players or competition results are shown. Hostinger plan/access, repository authorization and safe preview settings remain unverified; existing `/beta` routing and rollback must be proven before production cutover.
 
-## Remaining work and owner QA
+After owner visual acceptance, review/merge this candidate into website main and verify its SHA, then separately authorize a Hostinger Node/Next.js preview. Use Node24, root `.`, `npm ci --include=dev`, `npm run build`, output `.next`, `npm start` and platform `PORT`; keep live-service flags/indexing off. No hosting connection, deployment or DNS change happened here.
 
-Owner visual acceptance is pending. Live activation requires the private read API, authenticated registration gateway and distributed abuse controls, approved download metadata/client QA, Discord invite, optional providers and a Hostinger preview. Preserve the existing `/beta` feed before domain cutover. Server competition finalization/rewards, maps/skills exports and the global recent-unlock feed are separate missing backend capabilities, not fabricated portal data.
+The owner's explicit website-only instruction takes precedence over the inherited shared game-registry workflow for this turn. No game-server repository, database or runtime was modified. Coordination is kept in this website's `local/coordination/web-portal-beta-01a096f8.json` and published lane directory. The external game chat-directory still points to the earlier portal checkpoint; it was deliberately not edited. Readers should use this website branch and directory for the final visual candidate.
 
-No game server build/restart, database migration, client launch, native `LOGIN_PASSWORD` verification or hosting deployment was performed. Native login and approved executable checks remain mandatory when a client is actually handed off.
-
-Next milestone: connect fresh status, filtered rankings/profiles and the versioned achievement catalog, then the guarded registration service and Hostinger preview. The [17-point delivery report](../../BETA_PORTAL_REPORT.md), [API contract](../../TRIXTERMS_PUBLIC_API.md), [integration notes](../../REGISTRATION_AND_RELEASE_INTEGRATION.md), [asset brief](../../TRIXTERMS_WEB_VISUAL_ASSET_BRIEF.md) and [hosting guide](../../HOSTINGER_DEPLOYMENT.md) provide implementation details.
-
-## Coordination
-
-Only this lane branch is published by this task. The separate owner-authorized **Push website** task may promote the final frozen handoff to main. **Prepare TrixterMS website deployment** owns the shared game chat-directory registration, preventing competing directory edits. Preserve other lanes and all original source candidates. Readers obtain the final handoff commit from this file's Git history; the ignored local registry stores its independently verified SHA.
+The ignored website-local record stores the final handoff SHA after remote verification. This committed file cannot contain its own SHA; obtain it from Git history.

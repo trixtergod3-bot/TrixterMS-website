@@ -1,5 +1,6 @@
 /** Public DTOs. Database identifiers, account fields, and credentials never belong here. */
-export type PortalState = "live" | "unavailable" | "disabled" | "fixture";
+import type { RankingSort } from "./ranking-options.ts";
+export type PortalState = "live" | "stale" | "unavailable" | "disabled" | "fixture";
 export interface PortalEnvelope<T> {
   status: PortalState;
   data: T | null;
@@ -21,8 +22,35 @@ export interface LeaderboardEntry {
   jobName: string | null;
   fame: number;
   score: string | null;
+  /** Exact persisted EXP; mandatory for overall rankings, absent on legacy competitions. */
+  exp?: string;
+  guildName?: string | null;
 }
-export interface RankingsData { entries: LeaderboardEntry[]; total: number | null }
+export interface RankingsData { entries: LeaderboardEntry[]; total: number | null; page?: number; pageSize?: number }
+/** RC1 standing collections always include complete, bounded pagination metadata. */
+export interface PublicRankingsData {
+  sort: RankingSort;
+  entries: (LeaderboardEntry & { exp: string; guildName: string | null })[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+export interface PublicStatsData {
+  totalCharacters: number;
+  classDistribution: { jobName: string; count: number }[];
+  rankingSnapshotAt: string;
+}
+export interface PublicTelemetryData extends PublicStatsData {
+  online: boolean | null;
+  playersOnline: number | null;
+  channels: { channel: number; status: "online" | "offline" | "unknown"; playersOnline: number | null }[];
+  uptimeSeconds: number | null;
+  rates: { exp: number | null; meso: number | null; drop: number | null };
+  runtimeAsOf: string | null;
+  runtimeStatus: "live" | "unavailable";
+  /** No reviewed aggregate activity source is activated in RC1. */
+  recentActivity: null;
+}
 export interface TournamentData extends RankingsData {
   metric: string;
   date: string | null;
@@ -74,6 +102,11 @@ export const TELEMETRY_KEYS = [
   "combat.mobs_killed", "combat.bosses_killed", "combat.unique_bosses_killed", "combat.deaths",
   "progress.exp_earned", "economy.mesos_earned", "economy.mesos_spent", "economy.nx_earned",
   "economy.nx_spent", "items.cubes_found", "items.cubes_spent", "items.glasses_spent",
+  "fishing.rolls_completed", "fishing.successful_catches", "fishing.missed_rolls",
+  "fishing.inventory_blocked_rolls", "fishing.exchanges_completed", "fishing.fish_spent",
+  "fishing.miracle_cubes_earned", "slayer.credited_kills", "slayer.contracts_completed",
+  "slayer.marks_earned", "slayer.marks_spent", "slayer.rerolls",
+  "slayer.ultimate_activations", "slayer.exp_purchased", "slayer.levels_purchased",
 ] as const;
 export type TelemetryMetric = typeof TELEMETRY_KEYS[number];
 export interface TelemetryData {

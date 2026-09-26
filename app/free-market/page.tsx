@@ -6,7 +6,7 @@ import { readPortal } from '@/lib/portal/data';
 
 export const metadata: Metadata = {
   title: 'Free Market',
-  description: 'Browse TrixterMS shop NPCs, item prices, currencies and published shop rules.',
+  description: 'Browse TRIXTERMS shop NPCs, item prices, currencies and published shop rules.',
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;

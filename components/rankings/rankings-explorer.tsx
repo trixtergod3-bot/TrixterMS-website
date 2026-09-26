@@ -251,7 +251,7 @@ export function RankingsExplorer({
             <div className="ranking-table-wrap">
               <table className="ranking-table">
                 <caption className="sr-only">
-                  TrixterMS {categoryLabels[category]} rankings
+                  TRIXTERMS {categoryLabels[category]} rankings
                 </caption>
                 <thead>
                   <tr>

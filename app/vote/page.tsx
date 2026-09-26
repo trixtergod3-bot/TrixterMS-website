@@ -6,7 +6,7 @@ import { getPublicIntegrations } from '@/lib/portal/integrations';
 
 export const metadata: Metadata = {
   title: 'Vote',
-  description: 'Voting availability and the future TrixterMS community voting program.',
+  description: 'Voting availability and the future TRIXTERMS community voting program.',
 };
 
 export default function VotePage() {
@@ -14,7 +14,7 @@ export default function VotePage() {
   return (
     <main>
       <PageHero eyebrow="Help the world grow" title="A little support. A larger community."
-        description="Help more adventurers discover TrixterMS. The voting program will open here when its provider and rules are ready." />
+        description="Help more adventurers discover TRIXTERMS. The voting program will open here when its provider and rules are ready." />
       <section className="shell portal-section">
         <div className="portal-two-grid">
           <article className="portal-panel">

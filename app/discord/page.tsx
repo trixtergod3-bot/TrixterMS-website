@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Discord community',
-  description: 'Find the official TrixterMS Discord invite, community updates and beta information.',
+  description: 'Find the official TRIXTERMS Discord invite, community updates and beta information.',
 };
 
 export default function DiscordPage() {
@@ -23,7 +23,7 @@ export default function DiscordPage() {
             <MessagesSquare size={32} aria-hidden="true" />
             <span className="eyebrow">TRIXTERMS COMMUNITY</span>
             <h2>{discordInviteUrl ? 'The conversation continues on Discord.' : 'The official invite is on its way.'}</h2>
-            <p>{discordInviteUrl ? 'Use the official community link to join TrixterMS on Discord.' : 'The community invite has not been published yet. Return here for the official link and follow the latest beta updates below.'}</p>
+            <p>{discordInviteUrl ? 'Use the official community link to join TRIXTERMS on Discord.' : 'The community invite has not been published yet. Return here for the official link and follow the latest beta updates below.'}</p>
           </div>
           {discordInviteUrl
             ? <a className="button button-gold" href={discordInviteUrl} target="_blank" rel="noopener noreferrer">Join Discord <ArrowRight size={17} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>

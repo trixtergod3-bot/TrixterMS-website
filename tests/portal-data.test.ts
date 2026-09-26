@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { portalRequest, readCharacterAchievementsVerified, readPortal, validatePortalData } from "../lib/portal/data.ts";
+import { createPublicReader } from "../lib/portal/public-data.ts";
+import { TELEMETRY_KEYS } from "../lib/portal/contracts.ts";
 
 const status = { online: true, playersOnline: 12, version: "111.1", rates: { exp: null, meso: null, drop: null } };
 const row = { rank: 1, name: "Example", level: 30, jobId: 100, jobName: "Warrior", fame: 0, score: "9223372036854775807" };
+const rankingRow = { ...row, exp: "9223372036854775807", guildName: null };
+const rankingPage = { sort: "nx-earned", entries: [rankingRow], total: 1, page: 1, pageSize: 50 };
 const unlockedAt = "2026-09-12T10:00:00.000Z";
 const achievementDefinition = { key: "TEST_LEVEL_010", category: "LEVELING", name: "Matched live title", description: "Test-only catalog definition.", eventKey: "progress.level", dimension: "all", aggregation: "SNAPSHOT", threshold: "10", points: 10, displayOrder: 10, enabled: true };
 const secondDefinition = { ...achievementDefinition, key: "TEST_LEVEL_030", threshold: "30", points: 20, displayOrder: 20 };
@@ -82,14 +86,21 @@ void test("public reader rejects unknown routes and query injection before fetch
 });
 
 void test("BIGINT strings remain exact and unsafe numeric counters are rejected", () => {
-  const result = validatePortalData("rankings", { entries: [row], total: 1 }) as { entries: { score: string }[] };
+  const result = validatePortalData("rankings", rankingPage) as { entries: { score: string }[] };
   assert.equal(result.entries[0].score, "9223372036854775807");
-  for (const score of [9223372036854776000, "9223372036854775808", "-1", "01", "1e10"]) assert.throws(() => validatePortalData("rankings", { entries: [{ ...row, score }], total: 1 }));
+  for (const score of [9223372036854776000, "9223372036854775808", "-1", "01", "1e10"]) assert.throws(() => validatePortalData("rankings", { ...rankingPage, entries: [{ ...rankingRow, score }] }));
+});
+
+void test("public telemetry allowlist includes the Fishing and Slayer foundation", () => {
+  assert.equal(TELEMETRY_KEYS.length, 27);
+  assert.ok(TELEMETRY_KEYS.includes("fishing.successful_catches"));
+  assert.ok(TELEMETRY_KEYS.includes("slayer.contracts_completed"));
+  assert.ok(TELEMETRY_KEYS.includes("slayer.levels_purchased"));
 });
 
 void test("backend payloads are projected to public fields only", () => {
-  const result = validatePortalData("rankings", { entries: [{ ...row, accountid: 7, password: "private" }], total: 1, database: "private" });
-  assert.deepEqual(result, { entries: [row], total: 1 });
+  const result = validatePortalData("rankings", { ...rankingPage, entries: [{ ...rankingRow, accountid: 7, password: "private", id: 42, world: 0 }], database: "private" });
+  assert.deepEqual(result, rankingPage);
   assert.deepEqual(validatePortalData("status", { ...status, accounts: ["private"] }), status);
 });
 
@@ -101,7 +112,7 @@ void test("tournament winners require finalized rank-one evidence", () => {
   assert.throws(() => validatePortalData("daily", { ...daily, date: null }));
   assert.doesNotThrow(() => validatePortalData("daily", { ...daily, finalized: true, winner: "Example" }));
   assert.throws(() => validatePortalData("daily", { ...daily, entries: [{ ...row, rank: 101 }] }));
-  assert.throws(() => validatePortalData("rankings", { entries: [row, row], total: 2 }));
+  assert.throws(() => validatePortalData("rankings", { ...rankingPage, entries: [rankingRow, rankingRow], total: 2 }));
 });
 
 void test("upstream character identity and requested historical period must match", async (t) => {
@@ -128,31 +139,35 @@ void test("missing backend and disabled competitions never produce fake players"
   assert.equal((await readPortal("/api/rankings/weekly")).status, "disabled");
 });
 
-void test("transport has bounded requests, no credentials, and sanitized failures", async (t) => {
+void test("status alias uses authenticated bounded telemetry transport and sanitized failures", async (t) => {
   const oldUrl = process.env.TRIXTER_READ_API_URL;
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; if (oldUrl === undefined) delete process.env.TRIXTER_READ_API_URL; else process.env.TRIXTER_READ_API_URL = oldUrl; });
   process.env.TRIXTER_READ_API_URL = "https://reviewed-backend.invalid/readonly";
+  const token = "synthetic-only-token_abcdefghijklmnopqrstuvwxyz0123456789";
+  const clock = Date.now(), asOf = new Date(clock).toISOString();
+  const telemetry = { online: status.online, playersOnline: status.playersOnline, rates: status.rates, totalCharacters: 1, classDistribution: [{ jobName: "Beginner", count: 1 }], rankingSnapshotAt: asOf, channels: [], uptimeSeconds: null, runtimeAsOf: asOf, runtimeStatus: "live", recentActivity: null };
+  const get = () => createPublicReader({ now: () => clock, config: () => ({ url: process.env.TRIXTER_READ_API_URL, token }) }).read("/api/status");
   let calls = 0;
   globalThis.fetch = async (input, options) => {
     calls++;
-    assert.equal(input instanceof URL ? input.href : typeof input === "string" ? input : input.url, "https://reviewed-backend.invalid/readonly/api/status?");
-    assert.deepEqual(options?.headers, { Accept: "application/json" });
+    assert.equal(input instanceof URL ? input.href : typeof input === "string" ? input : input.url, "https://reviewed-backend.invalid/readonly/api/public/telemetry?");
+    assert.deepEqual(options?.headers, { Accept: "application/json", Authorization: `Bearer ${token}` });
     assert.equal(options?.redirect, "error");
     assert.equal(options?.cache, "no-store");
     assert.ok(options?.signal);
-    return Response.json({ status: "live", asOf: new Date().toISOString(), data: { ...status, password: "private" } });
+    return Response.json({ status: "live", asOf, data: { ...telemetry, password: "private" } });
   };
-  assert.deepEqual((await readPortal("/api/status")).data, status);
+  assert.deepEqual((await get()).data, { ...status, version: null });
   assert.equal(calls, 1);
   globalThis.fetch = async () => { throw new Error("Sensitive upstream details"); };
-  const failure = await readPortal("/api/status");
+  const failure = await get();
   assert.equal(failure.status, "unavailable");
   assert.equal(JSON.stringify(failure).includes("Sensitive"), false);
   globalThis.fetch = async () => Response.json({ status: "live", asOf: "2000-01-01T00:00:00Z", data: status });
-  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  assert.equal((await get()).status, "unavailable");
   globalThis.fetch = async () => new Response("x".repeat(1024 * 1024 + 1), { headers: { "content-type": "application/json" } });
-  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  assert.equal((await get()).status, "unavailable");
   process.env.TRIXTER_READ_API_URL = "https://user:password@reviewed-backend.invalid";
-  assert.equal((await readPortal("/api/status")).status, "unavailable");
+  assert.equal((await get()).status, "unavailable");
 });

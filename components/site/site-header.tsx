@@ -11,9 +11,9 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const active = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href + '/'));
   return <header className="portal-header">
-    <div className="portal-ribbon"><div className="shell"><span>A NEW CHAPTER IN A FAMILIAR WORLD</span><Link href="/news">TrixterMS beta journal <ArrowUpRight size={12}/></Link></div></div>
+    <div className="portal-ribbon"><div className="shell"><span>A NEW CHAPTER IN A FAMILIAR WORLD</span><Link href="/news">TRIXTERMS beta journal <ArrowUpRight size={12}/></Link></div></div>
     <div className="shell portal-header-inner">
-      <Link className="portal-brand" href="/" aria-label="TrixterMS home"><Leaf aria-hidden="true" size={31}/><span>TRIXTER<span className="brand-ms">MS</span><small>YOUR NEXT ADVENTURE</small></span></Link>
+      <Link className="portal-brand" href="/" aria-label="TRIXTERMS home"><Leaf aria-hidden="true" size={31}/><span>TRIXTERMS<small>YOUR NEXT ADVENTURE</small></span></Link>
       <nav className="portal-desktop-nav" aria-label="Primary navigation">{navigation.map(([href,label])=><Link key={href} href={href} aria-current={active(href)?'page':undefined}>{label}</Link>)}
         <details className="portal-more"><summary>More</summary><div>{more.map(([href,label])=><Link key={href} href={href} onClick={event=>event.currentTarget.closest('details')?.removeAttribute('open')}>{label}</Link>)}</div></details>
       </nav>
