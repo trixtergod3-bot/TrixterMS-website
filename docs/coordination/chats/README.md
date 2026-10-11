@@ -2,6 +2,7 @@
 
 | Slug | Exact task title | Publication branch | JSON | Handoff |
 | --- | --- | --- | --- | --- |
+| official-beta-website-improvement-01a12aef | TRIXTERMS Official Beta Website Improvement | codex/official-beta-website-improvement-01a12aef | [JSON](official-beta-website-improvement-01a12aef.json) | [MD](official-beta-website-improvement-01a12aef.md) |
 | website-rankings-deployment-01a0164f | Deploy telemetry rankings to the website | main | [JSON](website-rankings-deployment-01a0164f.json) | [MD](website-rankings-deployment-01a0164f.md) |
 | branded-beta-domain-20261001 | Move beta downloads to trixterms.com branding | codex/branded-beta-domain | [JSON](branded-beta-domain-20261001.json) | [MD](branded-beta-domain-20261001.md) |
 | web-predeployment-01a09705 | Prepare TrixterMS website deployment | codex/web-production-candidate-v1 | [JSON](web-predeployment-01a09705.json) | [MD](web-predeployment-01a09705.md) |

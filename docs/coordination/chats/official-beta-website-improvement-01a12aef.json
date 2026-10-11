@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a12aef-363e-7db3-ac09-09db543db3aa",
+  "chatSlug": "official-beta-website-improvement-01a12aef",
+  "chatTitle": "TRIXTERMS Official Beta Website Improvement",
+  "task": "Polish existing beta portal; local preview and isolated checkpoint only",
+  "status": "OWNER_QA",
+  "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\official-beta-website-improvement-01a12aef",
+  "branch": "codex/official-beta-website-improvement-01a12aef",
+  "localHead": "93f047ca42dbd6a0475f9d2aaf2e36b73991c257",
+  "publicationBranch": "codex/official-beta-website-improvement-01a12aef",
+  "latestCommit": "93f047ca42dbd6a0475f9d2aaf2e36b73991c257",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": true,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "app/beta-polish.css",
+    "app/classes/page.tsx",
+    "app/download/page.tsx",
+    "app/error.tsx",
+    "app/features/page.tsx",
+    "app/guide/page.tsx",
+    "app/layout.tsx",
+    "app/loading.tsx",
+    "app/page.tsx",
+    "components/portal/beta-faq.tsx",
+    "components/portal/feature-grid.tsx",
+    "components/portal/live-rankings.tsx",
+    "components/site/site-footer.tsx",
+    "components/site/site-header.tsx",
+    "docs/OFFICIAL_BETA_PORTAL_IMPROVEMENT.md",
+    "lib/portal/feature-catalog.ts",
+    "lib/site-config.ts",
+    "package-lock.json",
+    "tools/verify-beta-polish.mjs",
+    "tools/verify-browser.mjs",
+    "tools/verify-live-rankings.mjs",
+    "tools/verify-production.mjs"
+  ],
+  "dependencies": [
+    "Owner visual acceptance; separate authorization for hosting preview and live integration"
+  ],
+  "collisionRisks": [
+    "No live deployment or production credentials authorized; branch isolated from deployment branches"
+  ],
+  "remainingWork": [
+    "Owner visual review; separately authorized hosting preview"
+  ],
+  "ownerQa": [
+    "Review http://127.0.0.1:4328 and before/after http://127.0.0.1:4329"
+  ],
+  "sourceCoverage": "All lane source/docs published; inherited branded candidate changes disclosed in review",
+  "evidence": [
+    "94 portal tests; 44 bridge/registration tests passed",
+    "npm ci, typecheck, lint, build, full/production npm audit passed",
+    "120 route/viewport checks, 30 links, 17 production checks passed",
+    "Five viewport polish checks and nine synthetic ranking scenarios passed",
+    "Original artwork hashes unchanged; real services remain gated",
+    "No live publication, DNS, production credentials or /beta mutations"
+  ],
+  "lastUpdated": "2026-10-11T12:56:15.1462173+00:00"
+}
