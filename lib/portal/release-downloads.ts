@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto';
 import { getPublicIntegrations, validateReleaseDownloads, type ReleaseDownloads } from './integrations.ts';
 
-const officialFeed = 'https://floralwhite-stinkbug-872547.hostingersite.com/beta';
+const approvedFeeds = [
+  'https://patch.trixterms.com/beta',
+  'https://floralwhite-stinkbug-872547.hostingersite.com/beta',
+] as const;
 async function boundedText(url: string, limit: number, request: typeof fetch): Promise<string> {
   const response = await request(url, { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15_000) });
   if (!response.ok || !response.body) throw new Error('Release feed unavailable');
@@ -26,7 +29,8 @@ async function boundedText(url: string, limit: number, request: typeof fetch): P
  */
 export async function getReleaseDownloads(env: Record<string, string | undefined> = process.env, request: typeof fetch = fetch): Promise<ReleaseDownloads | null> {
   if (!env.TRIXTER_RELEASE_METADATA_URL) return getPublicIntegrations(env).downloads;
-  if (env.TRIXTER_RELEASE_METADATA_URL !== `${officialFeed}/releases/current.json`) return null;
+  const officialFeed = approvedFeeds.find(feed => env.TRIXTER_RELEASE_METADATA_URL === `${feed}/releases/current.json`);
+  if (!officialFeed) return null;
   try {
     const raw = JSON.parse(await boundedText(env.TRIXTER_RELEASE_METADATA_URL, 16_384, request));
     const downloads = validateReleaseDownloads(raw);

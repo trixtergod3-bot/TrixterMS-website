@@ -13,10 +13,17 @@ try{
  for(const width of [1440,1024,768,390,320]){
   const context=await browser.newContext({viewport:{width,height:width===1440?1000:844},deviceScaleFactor:1,reducedMotion:'reduce'});
   const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));
+  page.on('console',message=>{
+   const expectedPoll=message.text()==='Failed to load resource: the server responded with a status of 503 (Service Unavailable)'&&message.location().url.startsWith(base+'/api/public/rankings?');
+   if(message.type()==='error'&&!expectedPoll)report.errors.push(message.text());
+  });
   for(const route of routes){
-   const response=await page.goto(base+route,{waitUntil:'networkidle'});
+   const response=await page.goto(base+route,{waitUntil:'load'});
+   await page.waitForFunction(()=>Array.from(document.images).every(image=>image.complete));
    assert.equal(response.status(),200,route+' HTTP');
    assert.equal(await page.locator('h1').count(),1,route+' exactly one h1');
+   const publicText=(await page.locator('body').innerText())+' '+await page.title();
+   for(const match of publicText.matchAll(/\btrix(?:ter|ster)\s*ms\b/gi))assert.equal(match[0],'TRIXTERMS',route+' public brand');
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
    assert.equal(overflow,false,route+' overflows at '+width);
    const brokenImages=await page.locator('img').evaluateAll(images=>images.filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.getAttribute('src')));
@@ -30,7 +37,7 @@ try{
   await context.close();
  }
  const page=await browser.newPage();
- for(const href of linkSet){const url=new URL(href,base);const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});assert.equal(response.status(),200,'Broken internal link '+href);if(url.hash){const exists=await page.evaluate(id=>!!document.getElementById(id),decodeURIComponent(url.hash.slice(1)));assert.equal(exists,true,'Broken anchor '+href);}report.links.push(href)}
+ for(const href of linkSet){const url=new URL(href,base);const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});assert.equal(response ? response.status() : (await page.request.get(url.href)).status(),200,'Broken internal link '+href);if(url.hash){const exists=await page.evaluate(id=>!!document.getElementById(id),decodeURIComponent(url.hash.slice(1)));assert.equal(exists,true,'Broken anchor '+href);}report.links.push(href)}
  await page.goto(base);await page.getByRole('button',{name:'Daily leaders',exact:true}).click();await page.getByRole('heading',{name:'A new challenge. Every day.'}).waitFor();await page.getByRole('button',{name:'Weekly leaders',exact:true}).click();await page.getByRole('heading',{name:'A whole week to make your mark.'}).waitFor();report.interactions.push('home daily and weekly leader tabs');
  await page.goto(base+'/achievements');await page.getByLabel('Find an achievement').fill('First Steps');assert.equal(await page.locator('.achievement-card').count(),1);await page.getByLabel('Find an achievement').fill('no-matching-achievement');await page.getByRole('heading',{name:'A different path, perhaps?'}).waitFor();report.interactions.push('achievement catalog search and empty result');
  for(const path of ['/database?type=maps','/database?type=bogus&page=-1&q=%00test','/free-market?category=%0A&page=99999999','/rankings/daily?date=2026-02-30','/rankings?sort=fame&job=112','/rankings/weekly?weekStart=2026-09-07']){const response=await page.goto(base+path);assert.equal(response.status(),200,path);report.interactions.push('query '+path)}

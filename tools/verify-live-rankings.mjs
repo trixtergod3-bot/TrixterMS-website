@@ -39,7 +39,7 @@ try {
       };
     });
     const asOf = await page.evaluate(() => new Date().toISOString());
-    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: mode === 'stale' ? 'stale' : 'live', source: 'backend', message: '', asOf, data: { entries, total, page: currentPage, pageSize } }) });
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: mode === 'stale' ? 'stale' : 'live', source: 'backend', message: '', asOf, data: { sort: url.searchParams.get('sort') ?? 'level', entries, total, page: currentPage, pageSize } }) });
   });
 
   await page.goto(base + '/rankings', { waitUntil: 'domcontentloaded' });
@@ -107,7 +107,7 @@ try {
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, `Page overflow at ${width}px`);
-    for (const label of ['Rank', 'Character', 'Class', 'Level', 'Guild', 'Fame']) await expect(page.locator(`table tbody tr:first-child [data-label="${label}"]`)).toBeVisible();
+    for (const label of ['Rank', 'Character', 'Class', 'Level', 'Guild', 'Current EXP']) await expect(page.locator(`table tbody tr:first-child [data-label="${label}"]`)).toBeVisible();
     await page.locator('table tbody tr').first().scrollIntoViewIfNeeded();
     await page.screenshot({ path: `local/qa/live-rankings/mobile-${width}.png`, fullPage: false });
   }
@@ -128,13 +128,16 @@ try {
     await expect.poll(() => report.requests.at(-1)?.class).toBe(identity);
     assert.equal(report.requests.at(-1).job, null);
   }
-  await page.getByRole('combobox', { name: 'Class', exact: true }).selectOption('3112');
+  await page.getByRole('combobox', { name: 'Class', exact: true }).selectOption('demon-slayer');
   await page.getByRole('combobox', { name: 'Rank by', exact: true }).selectOption('fame');
   await page.getByRole('button', { name: 'Apply filters', exact: true }).click();
-  await page.waitForURL((url) => url.searchParams.get('job') === '3112' && url.searchParams.get('sort') === 'fame');
+  await page.waitForURL((url) => url.searchParams.get('class') === 'demon-slayer' && url.searchParams.get('sort') === 'fame');
+  await expect.poll(() => report.requests.at(-1)?.class).toBe('demon-slayer');
+  await expect(page.locator('table tbody tr:first-child [data-label="Fame"]')).toBeVisible();
+  await page.goto(base + '/rankings?job=3112&sort=fame', { waitUntil: 'domcontentloaded' });
   await expect.poll(() => report.requests.at(-1)?.job).toBe('3112');
   assert.equal(report.requests.at(-1).class, null);
-  report.checks.push('DA/Paladin identities remain separate, raw Demon Slayer job and fame filters preserved, filter resets pagination');
+  report.checks.push('DA/Paladin identities remain separate; Demon Slayer class, legacy numeric job and fame filters preserved; filter resets pagination');
 
   mode = 'empty';
   await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeEnabled();

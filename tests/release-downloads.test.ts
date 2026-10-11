@@ -19,6 +19,17 @@ void test('matching promoted metadata provides both artifacts', async () => {
   assert.equal(result?.fullClient?.url, metadata.fullClient.url);
   assert.equal(result?.launcher?.url, metadata.launcher.url);
 });
+void test('branded feed accepts only matching branded download and manifest URLs', async () => {
+  const branded = 'https://patch.trixterms.com/beta';
+  const brandedMetadata = { ...metadata,
+    launcher: { ...metadata.launcher, url: metadata.launcher.url.replace(base, branded) },
+    fullClient: { ...metadata.fullClient, url: metadata.fullClient.url.replace(base, branded) },
+    manifest: { ...metadata.manifest, url: `${branded}/manifest.json` } };
+  const brandedEnv = { TRIXTER_RELEASE_METADATA_URL: `${branded}/releases/current.json` };
+  assert.equal((await getReleaseDownloads(brandedEnv, mock(brandedMetadata)))?.launcher?.url,
+    brandedMetadata.launcher.url);
+  assert.equal(await getReleaseDownloads(brandedEnv, mock(metadata)), null);
+});
 void test('manifest changes during promotion hide stale archives', async () => {
   assert.equal(await getReleaseDownloads(env, mock(metadata, envelope + ' ')), null);
 });

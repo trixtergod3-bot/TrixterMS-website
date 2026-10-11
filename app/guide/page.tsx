@@ -1,3 +1,18 @@
-import Link from 'next/link';import { PageHero } from '@/components/shared/page-hero';
-export const metadata={title:'Getting started'};
-export default function Guide(){return <main><PageHero eyebrow="YOUR FIRST STEPS" title="Start your next adventure." description="Create your account, download the published beta client, and meet us in the world."/><section className="shell portal-section"><div className="portal-three-grid">{[['01','Create an account','Use the registration page when beta account creation opens.','/register','Registration'],['02','Get the client','Download the official published package and compare its SHA-256 checksum.','/download','Downloads'],['03','Sign in and explore','Start the launcher, then enter your account ID and password on MapleStory’s native in-game screen.','/status','World status']].map(([n,title,copy,href,label])=><article className="portal-panel" key={n}><span className="eyebrow">STEP {n}</span><h2>{title}</h2><p>{copy}</p><Link className="inline-link" href={href}>{label} →</Link></article>)}</div><div className="portal-panel"><h2>A few things to know.</h2><p>Beta downloads and account creation are opened only when the corresponding services are ready. The portal will show when access is available.</p><p>Unknown player counts and rates stay blank. Competition pages are prepared for upcoming events, and the achievement catalog is a preview until live activation is verified.</p><p>Keep your account password private. Sign in through the native game screen each time you launch.</p></div></section></main>}
+import Link from 'next/link';
+import { PageHero } from '@/components/shared/page-hero';
+import { BetaFaq } from '@/components/portal/beta-faq';
+export const metadata = { title: 'Getting started & FAQ', description: 'TRIXTERMS beta installation, account availability, file verification and native login help.' };
+export default function Guide() {
+  return <main>
+    <PageHero eyebrow="YOUR FIRST STEPS" title="Start your next adventure." description="Check beta access, install the official client and sign in through the native game screen." />
+    <section className="shell portal-section">
+      <div className="portal-three-grid">{[
+        ['01', 'Check beta access', 'Review download and registration availability. Existing players can use their account when the matching game release is available.', '/register', 'Account availability'],
+        ['02', 'Get the official client', 'Choose an available package on the download page. Extract archives into a writable folder, keep files together and let the supplied launcher verify the installation.', '/download', 'Downloads & installation'],
+        ['03', 'Sign in and explore', 'Wait for Ready to play, press PLAY, then enter your ID and password on MapleStory’s native login screen.', '/status', 'Server information'],
+      ].map(([step, title, copy, href, label]) => <article className="portal-panel" key={step}><span className="eyebrow">STEP {step}</span><h2>{title}</h2><p>{copy}</p><Link className="inline-link" href={href}>{label} →</Link></article>)}</div>
+      <article className="portal-panel"><h2>A beta, built together.</h2><p>Follow the matching release notes for supported classes and content. Feature spotlights and the staged achievement catalog show the direction of the beta; in-development content is not a public release.</p><Link className="inline-link" href="/patch-notes">Read release notes →</Link></article>
+    </section>
+    <BetaFaq />
+  </main>;
+}
