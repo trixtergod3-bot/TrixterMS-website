@@ -17,7 +17,7 @@ export default async function DownloadPage() {
   const downloads = await getReleaseDownloads();
   return <main>
     <PageHero eyebrow="TRIXTERMS · GMS v111.1" title="Your next adventure."
-      description="Get the game, create your account, and make your mark on TRIXTERMS."
+      description="Find the official beta release, installation steps and account availability in one place."
       aside={<div className="hero-stat"><Gamepad2 aria-hidden="true" /><strong>Windows</strong><span>native game client</span></div>} />
     <section className="shell portal-section" aria-labelledby="download-title">
       <div className="section-heading"><div><span className="eyebrow">Download center</span><h2 id="download-title">Get TRIXTERMS</h2></div>
@@ -31,7 +31,7 @@ export default async function DownloadPage() {
         </div>
         {downloads.manifest && <details><summary>Release verification details</summary><p><a href={downloads.manifest.url} rel="noopener noreferrer">Release manifest</a> · sequence {downloads.manifest.sequence}. The launcher authenticates the signed manifest and verifies managed files before applying updates.</p></details>}
       </> : <div className="portal-panel"><span className="eyebrow">Release preparation</span>
-        <h3>The next journey is getting ready.</h3><p>Beta downloads will appear here when the client and launcher are published. Current release version and patch status are awaiting publication.</p>
+        <h3>The next journey is getting ready.</h3><p>No verified download is available on this page right now. Downloads appear when the release checks pass. Check official announcements for availability.</p>
         <span className="button button-disabled" aria-disabled="true">Downloads coming soon</span>
         <p>Follow release announcements for availability.</p><Link href="/discord">Visit the community page</Link></div>}
     </section>
@@ -44,7 +44,7 @@ export default async function DownloadPage() {
           {downloads?.fullClient && !downloads.launcher ? <p>Download the full client and extract the entire archive into a writable folder. Keep its files together. If you download the launcher separately, place it in that same folder.</p>
             : downloads?.launcher ? <p>Download the launcher into your chosen writable installation folder. If it comes in a ZIP, extract it there first. The launcher can be the only file in this folder; click UPDATE after the initial check. It downloads and verifies the game files for you.</p>
               : <p>Installation instructions will match the published package. A launcher-only release installs the game into your chosen folder; a full-client archive is extracted there.</p>}
-          {downloads?.fullClient && <p>For the full client, extract the ZIP into a writable folder and open its included launcher. It verifies existing files and downloads only files that need updating or repair.</p>}{downloads && <p>Open the supplied launcher executable without renaming it.</p>}
+          {downloads?.fullClient && <p>For the full client, extract the archive into a writable folder and open its included launcher. It verifies existing files and downloads only files that need updating or repair.</p>}{downloads && <p>Open the supplied launcher executable without renaming it.</p>}
         </article>
         <article className="portal-panel"><span className="section-index">03</span><h3>Launch and sign in</h3><p>PLAY stays disabled while the launcher checks, updates, and verifies your files. Wait for Ready to play, then press PLAY and enter your ID and password on MapleStory’s native login screen.</p></article>
       </div>
@@ -53,5 +53,6 @@ export default async function DownloadPage() {
       <article className="portal-panel"><ShieldCheck aria-hidden="true" /><h2>File checks, built in.</h2><p>The launcher checks SHA-256 file hashes and authenticates its signed update manifest. A failed file check needs repair before you play.</p><p>The website cannot inspect files installed on your PC. Your launcher shows the current installation and update status.</p></article>
       <article className="portal-panel"><h2>Before you install</h2><ul><li>A Windows PC; the current launcher targets Windows x64.</li><li>A stable internet connection for installation and play.</li><li>A writable installation folder with space for the client and update backups.</li><li>Final tested Windows versions, hardware minimums, and required disk space will accompany the published release.</li></ul><p>No game database or Java installation is required on the player’s PC.</p></article>
     </section>
+    <section className="shell portal-section download-help"><h2>Need a hand getting started?</h2><p>Find answers about installation, file verification, registration and native login.</p><Link className="button button-secondary" href="/guide#faq">Read the beta FAQ</Link></section>
   </main>;
 }

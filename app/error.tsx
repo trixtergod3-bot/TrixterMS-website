@@ -20,10 +20,10 @@ export default function ErrorPage({
       <div className="state-panel">
         <AlertTriangle aria-hidden="true" />
         <span className="section-index">Signal interrupted</span>
-        <h1>We could not load this world record.</h1>
+        <h1>This page could not be loaded.</h1>
         <p>
-          The public read service may be unavailable. No gameplay connection or
-          database access was attempted.
+          Please try again. If the problem continues, check server information
+          or visit the community page for updates.
         </p>
         <div className="state-actions">
           <button
@@ -34,7 +34,7 @@ export default function ErrorPage({
             <RotateCcw aria-hidden="true" size={16} /> Try again
           </button>
           <Link className="button button-secondary" href="/status">
-            View world status
+            View server information
           </Link>
         </div>
       </div>

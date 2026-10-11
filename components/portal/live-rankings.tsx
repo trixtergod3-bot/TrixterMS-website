@@ -86,7 +86,11 @@ export function LiveRankings({ initialResponse, filters }: {
           credentials: 'omit',
           signal: controller.signal,
         });
-        if (!response.ok) throw new Error('Rankings unavailable');
+        if (!response.ok) {
+          // Release the failed response stream before scheduling the next retry.
+          await response.body?.cancel();
+          throw new Error('Rankings unavailable');
+        }
         const result: PortalEnvelope<PublicRankingsData> = await response.json();
         if (!['live', 'stale'].includes(result.status) || !result.data || !Array.isArray(result.data.entries)
           || result.data.sort !== filters.sort

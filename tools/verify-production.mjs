@@ -8,9 +8,15 @@ const report = {checkedAt:new Date().toISOString(),base,checks:[],errors:[]};
 try {
   const page = await browser.newPage();
   page.on('pageerror', error => report.errors.push(error.message));
-  page.on('console', message => { if(message.type()==='error') report.errors.push(message.text()+" "+message.location().url); });
+  page.on('console', message => {
+    // A disconnected preview intentionally returns 503 for this background poll.
+    // Its exact status and null-data envelope are independently asserted below.
+    const expectedUnavailablePoll = message.text() === 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)'
+      && message.location().url.startsWith(base + '/api/public/rankings?');
+    if(message.type()==='error' && !expectedUnavailablePoll) report.errors.push(message.text()+" "+message.location().url);
+  });
   for (const path of ['/', '/download', '/register', '/rankings', '/achievements', '/database', '/free-market', '/news', '/events', '/discord', '/status']) {
-    const response = await page.goto(base+path, {waitUntil:'networkidle'});
+    const response = await page.goto(base+path, {waitUntil:'load'});
     assert.equal(response.status(),200);
     assert.equal(new URL(await page.locator('link[rel="canonical"]').getAttribute('href')).href, 'https://trixterms.com'+(path==='/'?'/':path));
     assert.equal(new URL(await page.locator('meta[property="og:url"]').getAttribute('content')).href, 'https://trixterms.com'+(path==='/'?'/':path));
@@ -23,6 +29,10 @@ try {
     assert.match(await page.title(), /TRIXTERMS/);
     report.checks.push('canonical, OG, preview indexing, security headers and brand '+path);
   }
+  const unavailableRankings = await page.request.get(base + '/api/public/rankings?sort=level&page=1&limit=50');
+  assert.equal(unavailableRankings.status(),503);
+  assert.equal((await unavailableRankings.json()).data,null);
+  report.checks.push('disconnected ranking poll returns 503 with null data');
   const robots=await page.request.get(base+'/robots.txt');
   assert.equal(robots.status(),200); assert.match(await robots.text(),/Disallow: \//);
   const sitemap=await page.request.get(base+'/sitemap.xml');

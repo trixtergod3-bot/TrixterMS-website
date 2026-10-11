@@ -54,7 +54,7 @@ export function getSiteConfig(env: SiteEnvironment = process.env): SiteConfig {
 
 export function createSiteMetadata(config: SiteConfig = getSiteConfig()): Metadata {
   const title = 'TRIXTERMS — A familiar world. A new adventure.';
-  const description = 'An independent GMS v111.1 adventure with classic roots, remastered possibilities, and a new beta chapter. Downloads, rankings, achievements and community.';
+  const description = 'Explore the TRIXTERMS GMS v111.1 beta portal: class remasters, Astral adventures, progression, official download guidance and community. Feature availability follows verified releases.';
   const image = {
     url: '/art/trixterms-midnight-world.webp',
     width: 1536,
