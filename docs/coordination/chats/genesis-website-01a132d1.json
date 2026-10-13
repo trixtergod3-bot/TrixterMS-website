@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 2,
+  "chatId": "01a132d1-940d-7cd1-b2ba-bbdbfef30f61",
+  "chatSlug": "genesis-website-01a132d1",
+  "chatTitle": "Create Genesis sale website",
+  "task": "Repurpose the original Astral ascent into the existing TRIXTERMS homepage",
+  "status": "BLOCKED",
+  "repository": "trixtergod3-bot/TrixterMS-website",
+  "localWorktree": "C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/trixterms-astral-ascent-01a132d1",
+  "branch": "codex/astral-ascent-01a132d1",
+  "localHead": "8d1b907d0328d60af81f58d087257fd5fd5c3dd2",
+  "publicationBranch": "codex/astral-ascent-01a132d1",
+  "latestCommit": "8d1b907d0328d60af81f58d087257fd5fd5c3dd2",
+  "pushedToGithub": true,
+  "implemented": true,
+  "tested": true,
+  "verified": true,
+  "ownerAccepted": false,
+  "deployed": false,
+  "filesTouched": [
+    "app/page.tsx",
+    "app/layout.tsx",
+    "app/astral-ascent.css",
+    "components/astral/astral-journey.tsx",
+    "components/astral/ascent-engine.mjs",
+    "components/astral/ascent-model.mjs",
+    "public/art/astral-ascent/",
+    "package-lock.json",
+    "docs/ASTRAL_ASCENT_ART.json",
+    "docs/ASTRAL_ASCENT_HOMEPAGE.md",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
+  "dependencies": [
+    "Authenticated Hostinger account exposing the actual trixterms.com Node app and its deployed branch"
+  ],
+  "collisionRisks": [
+    "Preserve the independent owner-review polish lane",
+    "Do not deploy previously unverified candidate API/registration/download changes or alter the independent /beta patch feed"
+  ],
+  "remainingWork": [
+    "Inspect current Hostinger deployed SHA and connected branch; apply reviewed homepage patch to verified baseline",
+    "Targeted rollback, live installation and HTTPS/route/mobile verification",
+    "Owner visual acceptance"
+  ],
+  "ownerQa": [
+    "Review http://127.0.0.1:4317/ — Play the story or scroll; Enter the portal skips to existing player sections"
+  ],
+  "sourceCoverage": "Owned homepage/component/CSS changes, four original lossless WebP assets, narrow transitive lock repair and source handoff; inherited base a4625be remains unchanged outside the owned diff.",
+  "evidence": [
+    "Fresh npm ci, typecheck, lint and 94 portal tests passed",
+    "Production build and 12 production HTTP smoke checks passed",
+    "Full npm audit: 0 vulnerabilities after sharp/source-map-js transitive repairs",
+    "Source/browser security scan: 181 text files, 57 browser bundles, 0 findings",
+    "Five widths 1440/1024/768/390/320 checked: one h1, no horizontal overflow, controls within viewport",
+    "Full 58-second playback reached Nexus and stopped; reduced motion and route cleanup/remount verified; no browser errors observed",
+    "Four lossless WebP exports match decoded PNG pixels exactly; total runtime art 6,708,642 bytes, 22.6% smaller",
+    "Remote source SHA and component blob SHA read back and matched; initial HTTP408 upload repaired with per-command HTTP/1.1 and buffered push",
+    "Public trixterms.com returned HTTP200 with existing unpolished hero structure; exact deployed source identity unverified",
+    "No game/runtime/client, database, backend flags, hosting settings, DNS or /beta file changes; no extracted donor data in published source"
+  ],
+  "lastUpdated": "2026-10-13",
+  "objective": "Adapt the cinematic for TRIXTERMS while retaining existing player flows",
+  "state": "blocked",
+  "currentAction": "Source checkpoint published; live app identity/access required",
+  "blocker": "The connected Chrome Hostinger account contains no websites. The owner’s other profile was not exposed by the browser connection and direct Windows window targeting failed. The exact current production branch/SHA remains unavailable.",
+  "publiclyDeployed": false,
+  "nextAction": "Open the actual TrixterMS Node-app dashboard in the connected Chrome profile; inspect production identity before integration/deployment."
+}

@@ -2,6 +2,7 @@
 
 | Slug | Exact task title | Publication branch | JSON | Handoff |
 | --- | --- | --- | --- | --- |
+| genesis-website-01a132d1 | Create Genesis sale website | codex/astral-ascent-01a132d1 | [JSON](genesis-website-01a132d1.json) | [Handoff](genesis-website-01a132d1.md) |
 | website-rankings-deployment-01a0164f | Deploy telemetry rankings to the website | main | [JSON](website-rankings-deployment-01a0164f.json) | [MD](website-rankings-deployment-01a0164f.md) |
 | branded-beta-domain-20261001 | Move beta downloads to trixterms.com branding | codex/branded-beta-domain | [JSON](branded-beta-domain-20261001.json) | [MD](branded-beta-domain-20261001.md) |
 | web-predeployment-01a09705 | Prepare TrixterMS website deployment | codex/web-production-candidate-v1 | [JSON](web-predeployment-01a09705.json) | [MD](web-predeployment-01a09705.md) |
@@ -15,3 +16,4 @@ The lane JSON records a verified source checkpoint. Owner acceptance and deploym
 
 - Deploy official beta downloads — codex/official-beta-downloads-01a0a6d2: [handoff](official-beta-downloads-01a0a6d2.md), [status](official-beta-downloads-01a0a6d2.json).
 - Open public registration safely — `codex/open-public-registration-01a0a722`: [handoff](open-public-registration-01a0a722.md), [status](open-public-registration-01a0a722.json).
+
