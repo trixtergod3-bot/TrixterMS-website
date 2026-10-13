@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { AstralJourney } from '@/components/astral/astral-journey';
 import { ArrowRight, ArrowUpRight, Download, Swords, Flame, Gem, Trophy, BookOpen, Users, Sparkles, UserRound, CalendarDays, Radio, MoonStar } from 'lucide-react';
 import { readPortal } from '@/lib/portal/data';
 import type { StatusData, RankingsData, TournamentData } from '@/lib/portal/contracts';
@@ -16,20 +17,8 @@ export default async function Home() {
   const state = status.data?.online === true ? 'Online' : status.data?.online === false ? 'Offline' : 'Status unavailable';
   return <main className="beta-home midnight-home">
     <div className="midnight-world" aria-hidden="true"><picture><source media="(max-width: 640px)" srcSet="/art/trixterms-midnight-mobile.webp" /><Image src="/art/trixterms-midnight-world.webp" fill loading="eager" fetchPriority="high" sizes="100vw" alt="" /></picture></div>
-    <section className="portal-hero" aria-labelledby="home-title">
-      <div className="shell portal-hero-content">
-        <div className="hero-kicker"><MoonStar size={15} /> GMS v111.1 <i /> THE BETA CHAPTER</div>
-        <div className="hero-wordmark"><Sparkles className="wordmark-star" aria-hidden="true" /><h1 id="home-title">TRIXTERMS</h1></div>
-        <p className="hero-ribbon">A NEW CHAPTER BEGINS</p>
-        <p className="hero-intro">Same memories. New adventures.<br />A familiar world. A brighter tomorrow.</p>
-        <div className="hero-buttons">
-          <Link href="/download" className="button button-gold hero-play"><Download size={27} /><span>PLAY NOW<small>Download & start your journey</small></span></Link>
-          <Link href="/register" className="button button-glass"><UserRound size={27} /><span>REGISTER<small>Your next story starts here</small></span></Link>
-        </div>
-        <div className="hero-footnote"><Sparkles size={13} /><span>Explore</span><i /><span>Level</span><i /><span>Meet</span><i /><span>Belong</span><Sparkles size={13} /></div>
-      </div>
-    </section>
-    <div className="shell portal-main">
+    <AstralJourney />
+    <div className="shell portal-main" id="portal-content">
       <div className="adventure-dashboard">
         <aside className="adventure-sidebar" aria-label="Account and server information">
           <section className="game-panel account-panel" aria-labelledby="account-title">

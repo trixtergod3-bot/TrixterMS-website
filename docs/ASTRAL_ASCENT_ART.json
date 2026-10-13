@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-13",
+  "scope": "Original public website art only; no WZ, modern donor extraction or game binary",
+  "assets": [
+    {
+      "file": "public/art/astral-ascent/astral-world-clean.webp",
+      "bytes": 2490954,
+      "width": 996,
+      "height": 1578,
+      "sha256": "FA61C9526EDDC18BEAE1540B53F16BD4ACB725ACB79BCCCE3CD1D25470C45C08",
+      "masterSha256": "CC62F2ADDCC3F3E115E9261D9E1E96A9B7FA0CC17112925F963D57FCC2FE546F",
+      "masterBytes": 3221859,
+      "export": "lossless WebP; decoded pixel equality verified",
+      "provenance": "Owner-supplied world concept cleaned with built-in Imagegen"
+    },
+    {
+      "file": "public/art/astral-ascent/avenger-atlas.webp",
+      "bytes": 1507088,
+      "width": 1536,
+      "height": 1024,
+      "sha256": "C4BFD59AA219E57DC71601486829574CE54271E597F04B31368CF9CE456EBF98",
+      "masterSha256": "7587A23C8F1A6452B5A25140EE46F9F9AD607D7B5D61949AC8423359C595774C",
+      "masterBytes": 1964732,
+      "export": "lossless WebP; decoded pixel equality verified",
+      "provenance": "Original built-in Imagegen art from owner references"
+    },
+    {
+      "file": "public/art/astral-ascent/demon-bound.webp",
+      "bytes": 880568,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "912CB4F97F5177EEDB39D5AD5A8127CDA9EDB690CE26B6FB3154691AA7281199",
+      "masterSha256": "3E2A310CB2DC8A39FF4C8403E4D486D9B74E930F826AEC986908EA0EC2F7ED6C",
+      "masterBytes": 1100253,
+      "export": "lossless WebP; decoded pixel equality verified",
+      "provenance": "Original built-in Imagegen art from owner references"
+    },
+    {
+      "file": "public/art/astral-ascent/holy-effects.webp",
+      "bytes": 1830032,
+      "width": 1536,
+      "height": 1024,
+      "sha256": "D2FE3CE238316D3F26F61043F32D3134B72117D77F3AFE02D5F78DA9C488D0F0",
+      "masterSha256": "BF90E70D3D3D07E66E557E187DC9766DF643CF17DFAA11EDF22194507CC09FEC",
+      "masterBytes": 2385057,
+      "export": "lossless WebP; decoded pixel equality verified",
+      "provenance": "Original built-in Imagegen art from owner references"
+    }
+  ],
+  "animation": {
+    "durationSeconds": 58,
+    "characterOrder": [
+      "Demon Avenger",
+      "Demon Slayer",
+      "Angel Avenger"
+    ],
+    "atlasCellWidth": 512,
+    "sourceY": 250,
+    "sourceHeight": 560,
+    "rendering": "Canvas camera travel, wing deformation, chain breakup, stage blending, light and feather effects"
+  },
+  "ownership": "Owner-supplied concept and reference-derived generated artwork; class-concept cinematic, not gameplay proof",
+  "totalBytes": 6708642,
+  "originalPngBytes": 8671901,
+  "sizeReductionPercent": 22.6
+}
