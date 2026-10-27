@@ -1,108 +1,47 @@
 # Add live rankings telemetry bridge
 
-Status: **BLOCKED on live activation and authoritative integration**. IMPLEMENTED=true; TESTED=true for the named local checks; VERIFIED=false; OWNER ACCEPTED=false; DEPLOYED=false.
+Status: **BLOCKED** — 2026-10-27. Current source/preview is ready; public rankings are not connected to the authoritative Linux DB. This resumes the same lane and supersedes its September host-access assumptions.
 
-The current Website V2 portal now has an executable standalone public read bridge and live polling ranking UI. The live public endpoint still returned HTTP 503 during read-only inspection. No real database character or native character-creation test was observed. This is a functioning, tested implementation checkpoint, not a completed live deployment.
+- Website candidate: `codex/live-rankings-activation-01a097bc`, work checkpoint `b25d175bb8e92248e387440ef33dd140daadb073` (remote verified).
+- Worktree: `C:\Users\Studio PC\Documents\ChatGPT\TrixterMS\local\live-rankings-activation-01a097bc`.
+- Baseline: `a4625be080622068b59c04ab6f0298e61621c0bf` from the newer website checkout. Older cold-storage `web-portal-beta-v1` is not the deployment source. Separate polish/Astral candidates remain owned by their existing lanes.
 
-## Checkpoint and scope
+## IMPLEMENTED
 
-- Repository: `trixtergod3-bot/TrixterMS-website`.
-- Source branch: `codex/live-rankings-telemetry-01a097bc`.
-- Verified remote source checkpoint: `11ea103fb7249a227bb82f70b0ff0c277e2562a5`.
-- Actual development checkout: `C:/Users/Studio PC/Documents/ChatGPT/TrixterMS/local/web-portal-beta-v1`.
-- Preserved base: `0b291cbd878a026e77210b8a044c96cfd2e7c044`, the final visual candidate. Website main was not modified.
-- The parent Documents game checkout remains on its existing branch with other lanes' dirty work preserved. No gameplay, DA/DS behavior, WZ, portals, launcher, client or runtime was changed.
-- This handoff is a separate commit after the source checkpoint; obtain its revision from Git history rather than embedding a self-referential SHA.
+Reused the current ranking UI, class filters, nine ordering modes, RC1 bridge and release-feed reader unchanged. Added the missing `TRIXTER_RELEASE_METADATA_URL` example and [current activation instructions](../../LIVE_RANKINGS_ACTIVATION.md). No duplicate framework or telemetry store.
 
-## Delivered behavior
+Architecture remains game MariaDB → restricted `trixter_public_rankings_v2` → loopback SELECT-only bridge → authenticated HTTPS → website server → public browser API. Browser polling requires no rebuild when committed character data changes.
 
-`Game MariaDB -> restricted SQL view -> SELECT-only loopback Node bridge -> authenticated HTTPS -> Next.js server proxy -> browser /api/rankings`.
+The existing view reads character `id/world/name/level/exp/job/fame/guildid/accountid/gm/meso`; guild `guildid/name`; account eligibility flags and approved NX balances; the exact DA marker in `queststatus`; and the existing five lifetime counter joins in `trixter_telemetry_character_counters`. IDs and ownership stay internal. No password, account name, email, device, network, session or token fields enter public responses. Dedicated reader privileges and base-table access denial are checked at bridge startup/validation; no such Linux validation is claimed yet.
 
-The source-authored view uses `characters.id/world/name/level/exp/job/fame/guildid`, `guilds.guildid/name`, and `queststatus.characterid/quest/status/customData` for a binary-exact DA marker existence check. Account tables are not ranking data sources. Character IDs, world and marker values remain internal. Every existing non-deleted row is eligible, including Level 1 and offline characters, without the old Level 30 filter or job-family omissions.
+`/api/public/rankings`, `/api/public/characters`, `/api/public/stats` and `/api/public/telemetry` share the existing short snapshot cache; `/api/rankings` remains compatible. Ranking entries expose only rank, name, level, decimal EXP, job ID/name, fame, nullable guild name and the selected public score. Level one is eligible; staff/banned accounts are excluded. Default order is level, exact EXP, stable internal ID. Marker-aware DA remains distinct from genuine Paladin and native Demon Slayer; unfamiliar jobs remain eligible. Gameplay is unchanged.
 
-Public rows: `rank,name,level,exp,jobId,jobName,fame,guildName,score`; EXP is an exact decimal string and score is null. Envelope includes timestamp, total, page and pageSize. Default sort is level DESC, EXP DESC, internal ID ASC; fame is an optional alternate. Pagination defaults to 50 and is bounded to 100 rows. Custom DA requires marked carrier job 100/120/121/122 plus exact quest 999132900/status 0/marker text; genuine 122 remains Paladin and native Demon Slayer remains Demon Slayer. Mapping is presentation-only and unknown jobs remain eligible.
+One bounded database snapshot is shared across consumers at a ten-second refresh, with one connection, bounded query time, outage backoff and explicitly stale responses. Browser updates target 10–30 seconds after the DB commits. Runtime online/population fields stay unknown without the separately reviewed aggregate producer. See [bridge runbook](../../../bridge/README.md) for exact SQL/grants and query-plan checks.
 
-One 10-second shared snapshot, one in-flight refresh, one DB connection, a bounded query, cache/memory caps and failure backoff limit browser-driven load. No per-row SQL, manual ranking JSON, per-character build or redeploy is involved. Actual DB query plans/latency remain unverified. The standalone reader validates narrow grants at startup and rejects base-table reads. Secrets use protected server environment configuration; browser/private field projection and bundle scanning are enforced. No port 3306 exposure or database mutation was performed.
+## TESTED
 
-The existing page retains its approved design, adds guild/fame display, 20-second automatic polling, 50-row pagination, update age, loading/empty/unavailable states, stale-row retention during failed refresh and mobile layout down to 320px. Special legal staff display names remain text without unsupported profile links.
+On Node 24.19.0 / npm 11.17.0: **34/34 focused website tests**, **40/40 bridge tests**, production build including TypeScript, and one production preview smoke passed. At 390px, rankings and download pages had no horizontal overflow and no page errors. The disconnected ranking API returned 503/null with no invented rows; the download page rendered both exact current official links and native-login instructions. Preview port 4349 was closed after testing.
 
-**Persistence caveat:** game source autosaves online characters every five minutes. New character creation commits immediately. The 10–30-second freshness target is after DB commit; in-memory progress can wait for normal save/logout. No runtime persistence change was made.
+Local evidence: `local/qa/activation-20261027/preview-smoke.json`, `rankings-unavailable.png`, `download-live-metadata.png`. Independent narrow review corrected the documented loopback development mode; diff/JSON checks passed. These are local/fixture tests, not current Linux end-to-end verification.
 
-Full architecture, contracts, source rationale, provisioning, performance limits and owner procedure: [LIVE_RANKINGS_BRIDGE.md](../../LIVE_RANKINGS_BRIDGE.md). Dedicated service installation/privilege checks: [bridge README](../../../bridge/README.md).
+## VERIFIED
 
-## Executed checks
+Live `/download` returns 200 and both links match official sequence **18**, release `v111.1-beta.1-boss-rush-stability.1`. Metadata matches the raw manifest SHA-256 `5E14CAA6B9747684C69575522A239A11E740453B3D335625D62F3E501E8A96CF`; both archive HEAD requests return 200 with matching lengths (68,698,039 and 3,377,572,211 bytes) and byte-range support. Archive bodies/signature/native gameplay were not reverified. The working feed is the existing floralwhite Hostinger origin; `patch.trixterms.com` still fails HTTPS.
 
-| Check | Result |
-| --- | --- |
-| Production build | PASS, all existing routes compiled |
-| Typecheck and lint | PASS |
-| Website unit/security/HTTP integration | 50/50 PASS |
-| Bridge fake-source/auth/cache/grant/projection tests | 21/21 PASS |
-| Specialized ranking browser tests | Eight behavior groups, 11 intercepted requests, zero page errors |
-| Full browser regression | 120 route/viewport checks, 26 internal links, 10 interactions, zero errors or unexpected console errors; six expected unavailable-ranking resource responses |
-| Source/generated browser security scan | 119 text files, 55 browser bundles, zero findings at source checkpoint |
-| Bridge locked dependency audit | mariadb 3.5.4; zero reported vulnerabilities |
-| Source publication | Remote branch resolves exact named source SHA |
-| Real authoritative DB values/guilds/index plan/load | NOT RUN; host access blocked |
-| Real creation/progress/logout website test | NOT RUN; no live integration established |
-| Owner acceptance / deployment | NOT CLAIMED |
+Public `/rankings` returns 200, but `/api/rankings` and `/api/status` return 503; `/api/public/rankings` returns 400. Live rankings integration: **not verified**. Owner acceptance: **not given**. Source publication is not hosting deployment.
 
-Fixture tests exercise real loopback HTTP between bridge and portal adapter and browser response interception. They never substitute for real game DB verification. Temporary API failure retains existing UI rows with stale labeling; it does not fabricate live data.
+## FILES
 
-## Blocker and next action
+This checkpoint changes `.env.example`, `docs/LIVE_RANKINGS_ACTIVATION.md`, and this lane's JSON/Markdown handoff only. No game/runtime/client/database/hosting settings or public release metadata changed. The existing official download links are preserved; pending private QA/inactive archives are not linked.
 
-Read-only HTTP probes saw `https://trixterms.com/rankings` return 200 with Next.js HTML and `/api/rankings` return 503. Hosting is documented as managed Node on Hostinger; this task had no authenticated hosting environment configuration. The instructed authoritative `trixterms-beta-host` was unreachable on 22/5985/8484. A historical SINGLE_PC handoff conflicts with current instructions; current host authority must be confirmed before selecting a DB. Elevated read-only local process/listener inspection found no Java/MariaDB runtime. No substitute server was started.
+## BLOCKERS
 
-Next action: confirm the authoritative host and provide an accessible session there; follow the reviewed bridge runbook to inspect/back up/provision the view and reader, validate grants/EXPLAIN/latency and DB isolation, configure one supervised loopback service with authenticated HTTPS and edge rate limits, then configure/deploy the website through its existing Node hosting process while preserving `/beta`. Supply secrets only through protected environment configuration, never task text. No implementation merge into main or deployment is implied by publication.
+Saved SSH now reaches `trixter-server`; initial inspection saw game/MariaDB active and DB listening on loopback. No Node/npm was found on PATH or bridge listener on 4316. Retry found neither checked bridge service installed. The fixed database metadata probe stopped at `sudo: interactive authentication is required`; view/reader existence and current query cost remain unknown. No password or alternate privileged credentials were requested or read.
 
-Owner QA **after activation**: open All classes rankings and note total; use native ID/password login to create a unique character; wait up to 30 seconds for its Level 1 row and total increase. Gain levels/EXP, allow the game save (up to five minutes or logout), then the website poll. Confirm progress/rank and persistence after logout; inspect the API's public field allowlist. Only the owner may accept this result.
+Hostinger navigation and native login-window inspection timed out. The correct app's deployed SHA/environment/HTTPS route remain inaccessible in this session. No DNS, tunnel, firewall or hosting changes were attempted. The Linux release owner remains the sole game/runtime/DB writer; public client promotion still follows its final gameplay gate.
 
-Next telemetry feature recommended: class and level distributions from the same safe snapshot, adding no DB reads. Runtime online count/channel population require a trustworthy timestamped runtime aggregate.
+## NEXT
 
-## Collision controls and local evidence
+Existing Linux owner `01a0e9ab-6a93-7a92-ae75-b000dea2b11a` uses its privileged session to validate/provision the reviewed read boundary, compatible Node and one authenticated HTTPS bridge. Hosting owner then connects a preview from the reviewed integrated website source, preserving newer lane changes and `/beta`. This lane can then prove real current DB → browser data.
 
-The concurrent DA/DS separation and Henesys portal lane is read-only input; no files in its gameplay scope were edited. Revisit only the presentation marker view if that lane intentionally changes identity. Source lives entirely in the website repository. The authoritative local registry record is owned by chat 01a097bc-a872-7e23-a986-467c79bff2bf; other records are preserved. A separate sparse game-repository checkout handles directory discovery so no unrelated dirty game history is published.
-
-No game data, proprietary binaries, accounts, credentials, dumps or sensitive logs are in this checkpoint. Screenshots, generated build output, dependency caches and local QA receipts stay ignored. Receipt paths are relative to the website checkout:
-- Specialized receipt: local/qa/live-rankings/report.json; SHA-256 E1386DB35ECEFD4345BFB312C1BFB5786DF0845226A92A1F155835316B0487DF.
-- Broad receipt: local/qa/browser-report.json; SHA-256 3EF4B64A6EC6D7EB8F78E1314E8207CE5CAEC4C2442BE7CD15E02D17A72057A7.
-- Visual evidence: local/qa/live-rankings/desktop-table.png and mobile-320.png / mobile-390.png (synthetic browser fixtures only).
-
-## Exact owned source files
-
-Paths below are relative to the exact website checkout above (and to the dedicated website repository):
-
-- `.env.example`
-- `.gitignore`
-- `app/rankings/loading.tsx`
-- `app/rankings/page.tsx`
-- `bridge/.gitignore`
-- `bridge/README.md`
-- `bridge/package-lock.json`
-- `bridge/package.json`
-- `bridge/schema.sql`
-- `bridge/src/config.mjs`
-- `bridge/src/database.mjs`
-- `bridge/src/http.mjs`
-- `bridge/src/jobs.mjs`
-- `bridge/src/main.mjs`
-- `bridge/src/privileges.mjs`
-- `bridge/src/rankings.mjs`
-- `bridge/src/validate-database.mjs`
-- `bridge/tests/bridge.test.mjs`
-- `components/portal/live-rankings.module.css`
-- `components/portal/live-rankings.tsx`
-- `components/portal/ranking-table.tsx`
-- `docs/BETA_PORTAL_REPORT.md`
-- `docs/LIVE_RANKINGS_BRIDGE.md`
-- `docs/TRIXTERMS_PUBLIC_API.md`
-- `lib/portal/contracts.ts`
-- `lib/portal/data.ts`
-- `tests/live-rankings-contract.test.ts`
-- `tests/live-rankings-integration.test.ts`
-- `tests/portal-data.test.ts`
-- `tools/check-security.mjs`
-- `tools/verify-browser.mjs`
-- `tools/verify-live-rankings.mjs`
-
-Coordination additions: docs/coordination/chats/live-rankings-01a097bc.md and .json, plus the game repository's directory locator only.
+After activation, owner QA is: open `/rankings`, note total, manually sign in to the game and create a unique Level 1 character; wait up to 30 seconds after commit; gain EXP/levels, save/log out and confirm the changed standing and persistence. Check the public field allowlist. Do not mark VERIFIED or ACCEPTED before those actual observations. Next telemetry activation can be online count by channel through the existing aggregate contract.
