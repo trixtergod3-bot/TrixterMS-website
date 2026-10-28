@@ -23,6 +23,7 @@ const config: NextConfig = {
         destination: `${CANONICAL_SITE_ORIGIN}/:path*`,
         permanent: true,
       },
+      { source: '/register', destination: 'https://register-gateway.trixterms.com/register', permanent: false },
       { source: '/daily-rankings', destination: '/rankings/daily', permanent: true },
       { source: '/community', destination: '/discord', permanent: true }
     ];
