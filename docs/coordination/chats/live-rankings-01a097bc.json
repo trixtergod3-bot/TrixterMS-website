@@ -3,13 +3,13 @@
   "chatId": "01a097bc-a872-7e23-a986-467c79bff2bf",
   "chatSlug": "live-rankings-01a097bc",
   "chatTitle": "Add live rankings telemetry bridge",
-  "task": "Resume existing live rankings bridge and prepare verified official game download links; stage source/preview only pending final gameplay and release gate.",
+  "task": "Extend the existing live rankings UI with real-data cards, medals, exact-name search, profiles, and automatic refresh while preserving the current public bridge and website registration/download flows.",
   "status": "BLOCKED",
-  "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\live-rankings-activation-01a097bc",
-  "branch": "codex/live-rankings-activation-01a097bc",
-  "publicationBranch": "codex/live-rankings-activation-01a097bc",
-  "localHead": "b25d175bb8e92248e387440ef33dd140daadb073",
-  "latestCommit": "b25d175bb8e92248e387440ef33dd140daadb073",
+  "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\live-rankings-avatars-01a14",
+  "branch": "codex/live-rankings-avatars-01a14",
+  "publicationBranch": "codex/live-rankings-avatars-01a14",
+  "localHead": "53a837ec92024305b8a4695c88d9252d3e3febb8",
+  "latestCommit": "53a837ec92024305b8a4695c88d9252d3e3febb8",
   "pushedToGithub": true,
   "implemented": true,
   "tested": true,
@@ -17,42 +17,44 @@
   "ownerAccepted": false,
   "deployed": false,
   "filesTouched": [
-    ".env.example",
-    "docs/LIVE_RANKINGS_ACTIVATION.md",
-    "docs/coordination/chats/live-rankings-01a097bc.json",
-    "docs/coordination/chats/live-rankings-01a097bc.md"
+    "app/character/[name]/page.tsx",
+    "app/globals.css",
+    "app/rankings/page.tsx",
+    "components/portal/live-rankings.module.css",
+    "components/portal/live-rankings.tsx",
+    "components/portal/ranking-cards.tsx",
+    "package.json",
+    "package-lock.json",
+    "tests/live-rankings-contract.test.ts"
   ],
   "dependencies": [
-    "Existing Linux owner privileged session for reviewed view/SELECT-only reader validation and one supervised bridge.",
-    "Authenticated HTTPS bridge path and server-only website URL/token settings.",
-    "Access to the correct Hostinger Node application for deployed-SHA inspection and preview activation."
+    "Linux owner must validate and activate the restricted read-only database bridge; public production endpoint currently returns unavailable/invalid-route responses.",
+    "A compatible v111.1 avatar renderer and safe appearance/equipment projection are not present in the active public bridge.",
+    "Character playtime is not present in the reviewed public character source schema."
   ],
   "collisionRisks": [
-    "Preserve current Linux R4 and sole release writer; this lane performs no game/DB/hosting mutations.",
-    "Preserve separately owned website polish and Astral source; do not deploy an older checkout.",
-    "Keep current public sequence 18 and private QA candidates separate; no release-feed promotion."
+    "No game server, MariaDB, Hostinger environment, public site, registration service, or release feed was modified.",
+    "Do not deploy until the existing bridge is live and browser responses validate against real authorized character data.",
+    "Do not use original site artwork as a player portrait; cards label missing appearance data explicitly."
   ],
   "remainingWork": [
-    "Linux owner validates/provisions current restricted view and reader, compatible Node, one supervised bridge and authenticated HTTPS.",
-    "Hosting owner inspects current app SHA/settings, integrates reviewed candidate without dropping newer work, and connects preview.",
-    "Prove real current DB integration and owner creation/progress/logout acceptance."
+    "Linux owner verifies current schema/indexes and provisions the reviewed least-privilege bridge under the single release owner.",
+    "Connect the already implemented website reader to the authenticated HTTPS bridge and test real rankings, creation/progress propagation, paging, outages, and safe fields.",
+    "Qualify a compatible renderer and appearance/equipment data contract after schema/query-plan review; report playtime unavailable unless a safe persisted source exists.",
+    "Deploy through the existing Hostinger website workflow only after end-to-end real-data verification."
   ],
   "ownerQa": [
-    "After activation, open https://trixterms.com/rankings, note total, manually create a uniquely named Level 1 character in the native game client, then wait 10-30 seconds after commit.",
-    "Gain EXP/levels, let the server save or log out, and confirm changed standing and persistence. Owner acceptance remains explicit."
+    "After bridge activation and website deployment, manually authenticate through the native game login, create a unique Level 1 character, confirm it appears within 60 seconds, gain EXP and verify rank updates, then inspect only the public API field allowlist. No end-to-end data QA has occurred."
   ],
-  "sourceCoverage": "This checkpoint adds the missing metadata URL example and current activation documentation atop a4625be; existing ranking/download/bridge implementation reused unchanged.",
+  "sourceCoverage": "Website source only: live ranking cards replace the table, exact-name search uses the existing public characters endpoint, profile lookup uses the public endpoint, polling is 60 seconds, and the existing bridge data/unavailability states remain authoritative. No appearance IDs or renderer added because neither exists in the active bridge contract.",
   "evidence": [
-    "2026-10-27: 34/34 focused website tests and 40/40 bridge tests passed; production build including TypeScript passed on Node 24.19.0/npm 11.17.0.",
-    "One production preview at 127.0.0.1:4349: rankings page 200, disconnected API 503/null data; download page 200 with exact live sequence 18 links; 390px no overflow and zero page errors. Preview stopped and listener closed.",
-    "Public downloads 200; displayed links match official metadata; raw manifest SHA matches and sequence/release agree; both archives HEAD 200 with expected lengths. Archive bodies/signature/native gameplay not reverified.",
-    "Public rankings page 200; /api/rankings and /api/status 503; /api/public/rankings 400. Live integration not proven.",
-    "Initial SSH read-only probe: trixter-server; game/MariaDB active, DB loopback 3306; no Node/npm on PATH or listener 4316. Retry: both checked bridge service names absent; sudo database metadata query requires interactive authentication. No view/reader existence claim.",
-    "Hostinger browser navigation and native window inspection timed out; hosting account/settings/deployed SHA not observed. patch.trixterms.com HTTPS fails.",
-    "Narrow independent review corrected the local-development-only HTTP statement; no remaining material finding.",
-    "Source checkpoint remote SHA verified b25d175bb8e92248e387440ef33dd140daadb073; no game, database, client, hosting or public feed mutation."
+    "Source checkpoint 53a837ec92024305b8a4695c88d9252d3e3febb8, based on the current integrated website source at d95c0463d8be1eb8f60f9363f424c695a6bc9263.",
+    "95 website tests, TypeScript, lint, Next production build, security scan (176 text files / 57 browser bundles / 0 findings), and npm audit (0 vulnerabilities) passed. Next.js is pinned to 16.4.3, which resolves the reported advisories.",
+    "Local production preview: /rankings, /character/PineArrow and /download returned HTTP 200; rankings API returned 503/null with no mock rows because bridge configuration is absent. Preview stopped.",
+    "Public production read check: /rankings and /register returned 200; /api/rankings?limit=1 returned 503 unavailable; /api/public/rankings?sort=level&page=1&limit=1 returned 400 unknown endpoint. No deployment made.",
+    "Real database rows, equipment IDs, hair/face/skin appearance, character renderer, playtime, and owner acceptance were not verified. Existing bridge activation handoff records the Linux sudo/schema prerequisite."
   ],
-  "lastUpdated": "2026-10-27T13:14:08.7209608Z",
-  "blocker": "Linux bridge activation needs its existing owner privileged session (sudo requires interactive authentication); compatible Node/service and authenticated HTTPS are not established. Correct Hostinger app settings are inaccessible in this session. Live rankings remain unavailable.",
-  "nextAction": "Linux owner activates/validates the reviewed read boundary and HTTPS bridge; hosting owner connects the candidate preview, then this lane runs real DB-to-browser verification."
+  "lastUpdated": "2026-10-29T19:57:18.1399691Z",
+  "blocker": "The deployed website has no working current public rankings route/bridge configuration, and the Linux read-only bridge requires its owner administrator session for schema and service qualification. Real data cannot be verified. Appearance/equipment data and a compatible v111.1 renderer are also unavailable.",
+  "nextAction": "Existing Linux owner validates and activates the least-privilege bridge; then connect an isolated Hostinger preview and repeat end-to-end checks with authorized real character data before production publication."
 }
