@@ -12,6 +12,31 @@
 .refresh { min-width: 102px; min-height: 40px; gap: 8px; }
 .refresh:disabled { opacity: 0.65; cursor: progress; }
 .summary { color: #adc2b1; font-size: 12px; line-height: 1.7; margin-bottom: 17px; }
+.cards { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.card {
+  --medal: #91a6bb;
+  position: relative; isolation: isolate; overflow: hidden; display: grid;
+  grid-template-columns: 54px minmax(150px, 220px) minmax(0, 1fr);
+  align-items: center; gap: clamp(12px, 2.5vw, 28px); min-height: 190px;
+  padding: 18px 24px; border: 1px solid color-mix(in srgb, var(--medal) 36%, var(--border));
+  border-radius: 15px; background: #111d1c; box-shadow: 0 12px 32px #050c0b55;
+}
+.rank1 { --medal: #f1c969; }
+.rank2 { --medal: #c5d2d2; }
+.rank3 { --medal: #d59b6d; }
+.cardBackdrop { position: absolute; inset: 0; z-index: -1; opacity: .24; background-image: linear-gradient(90deg,#09110f9c,#0a1210ed 56%,#0b1411f2),url('/art/trixter-world.webp'); background-size: cover; background-position: center 48%; }
+.medal { display: grid; justify-items: center; gap: 3px; color: var(--medal); font-size: 13px; font-weight: 800; }
+.appearance { min-height: 142px; display: grid; align-content: center; justify-items: center; gap: 6px; border: 1px dashed #91a6bb75; border-radius: 12px; background: #0912109e; color: #c7d5cb; text-align: center; }
+.appearance span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.appearance strong { color: #f0ca79; font-size: 13px; }
+.identity { min-width: 0; }
+.classLine { color: #c2d2c8; font-size: 12px; }
+.identity h2 { margin: 5px 0 12px; font-size: clamp(21px, 3vw, 30px); line-height: 1.15; overflow-wrap: anywhere; }
+.identity h2 a { color: #f6f2df; text-decoration: none; }
+.identity h2 a:hover { color: #f3d283; }
+.details { display: flex; flex-wrap: wrap; gap: 10px 24px; color: #e1e8df; font-size: 13px; }
+.details span { display: grid; gap: 3px; min-width: 72px; overflow-wrap: anywhere; }
+.details small { color: #9fb6a4; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .pagination { align-items: center; }
 .pagination span { font-size: 12px; color: #b8c7b7; padding: 9px 4px; }
 .table { table-layout: fixed; }
@@ -20,6 +45,11 @@
 .table th:nth-child(4), .table th:nth-child(6) { width: 80px; }
 
 @media (max-width: 640px) {
+  .card { grid-template-columns: 34px minmax(0, 1fr); align-items: start; gap: 10px 12px; padding: 14px; }
+  .medal { grid-column: 1; grid-row: 1 / span 2; padding-top: 5px; }
+  .appearance { grid-column: 2; grid-row: 1; min-height: 90px; }
+  .identity { grid-column: 2; grid-row: 2; }
+  .details { gap: 10px 16px; }
   .tableWrap { overflow: visible; }
   .table { display: block; min-width: 0; }
   .table caption { display: block; }

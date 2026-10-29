@@ -20,8 +20,9 @@ export default async function Rankings({ searchParams }: {
   const job = !classFilter && typeof params.job === 'string' && /^\d{1,5}$/.test(params.job) ? params.job : undefined;
   const page = typeof params.page === 'string' && /^\d{1,5}$/.test(params.page) ? Math.max(1, Math.min(10000, Number(params.page))) : 1;
   const sort = typeof params.sort === 'string' && RANKING_SORT_KEYS.has(params.sort) ? params.sort as RankingSort : 'level';
-  const filters: RankingFilters = { sort, job, class: classFilter, page };
-  const result = await readPortal<PublicRankingsData>('/api/rankings', { ...filters, limit: 50 });
+  const name = typeof params.name === 'string' && /^[A-Za-z0-9]{1,13}$/.test(params.name) ? params.name : undefined;
+  const filters: RankingFilters = { sort, job, class: classFilter, name, page };
+  const result = await readPortal<PublicRankingsData>(name ? '/api/public/characters' : '/api/rankings', { ...filters, limit: 50 });
 
   return (
     <main>
@@ -32,7 +33,7 @@ export default async function Rankings({ searchParams }: {
           <Link href="/rankings/daily">Daily competition</Link>
           <Link href="/rankings/weekly">Weekly rankings</Link>
         </nav>
-        <LiveRankings key={`${filters.sort}:${job ?? ''}:${classFilter ?? ''}:${page}`} initialResponse={result} filters={filters} />
+        <LiveRankings key={`${filters.sort}:${job ?? ''}:${classFilter ?? ''}:${name ?? ''}:${page}`} initialResponse={result} filters={filters} />
       </section>
     </main>
   );

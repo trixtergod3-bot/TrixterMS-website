@@ -9,25 +9,26 @@ import { RANKING_CLASS_KEYS, RANKING_CLASS_OPTIONS, RANKING_SORT_KEYS,
   RANKING_SORT_OPTIONS, rankingSortOption } from '@/lib/portal/ranking-options';
 import type { RankingClass, RankingSort } from '@/lib/portal/ranking-options';
 import { EmptyState } from './shared';
-import { RankingTable } from './ranking-table';
+import { RankingCards } from './ranking-cards';
 import styles from './live-rankings.module.css';
 
-const REFRESH_MS = 20_000;
+const REFRESH_MS = 60_000;
 const MAX_STALE_MS = 120_000;
 const PAGE_SIZE = 50;
 export interface RankingFilters {
   sort: RankingSort;
   job?: string;
   class?: RankingClass;
+  name?: string;
   page: number;
 }
-
 function queryString(filters: RankingFilters) {
   return new URLSearchParams({
     sort: filters.sort,
     page: String(filters.page),
     limit: String(PAGE_SIZE),
     ...(filters.class ? { class: filters.class } : filters.job ? { job: filters.job } : {}),
+    ...(filters.name ? { name: filters.name } : {}),
   }).toString();
 }
 
@@ -80,7 +81,8 @@ export function LiveRankings({ initialResponse, filters }: {
       controller = new AbortController();
       const timeout = window.setTimeout(() => controller?.abort(), 8000);
       try {
-        const response = await fetch(`/api/public/rankings?${query}`, {
+        const endpoint = filters.name ? '/api/public/characters' : '/api/public/rankings';
+        const response = await fetch(`${endpoint}?${query}`, {
           headers: { Accept: 'application/json' },
           cache: 'no-store',
           credentials: 'omit',
@@ -124,7 +126,7 @@ export function LiveRankings({ initialResponse, filters }: {
       controller?.abort();
     };
   // The page gives each applied query a fresh component key. A refresh retains its last successful rows.
-  }, [query, filters.page, filters.sort, refreshKey, initialResponse]);
+  }, [query, filters.name, filters.page, filters.sort, refreshKey, initialResponse]);
 
   const visibleSnapshot = snapshot?.asOf && (now === null || now - Date.parse(snapshot.asOf) <= MAX_STALE_MS) ? snapshot : null;
   const data = visibleSnapshot?.data;
@@ -141,12 +143,15 @@ export function LiveRankings({ initialResponse, filters }: {
       const rawClass = form.get('class');
       const selected = typeof rawClass === 'string' ? rawClass : '';
       const rawSort = form.get('sort');
+      const rawName = form.get('name');
       const next: RankingFilters = {
         sort: typeof rawSort === 'string' && RANKING_SORT_KEYS.has(rawSort) ? rawSort as RankingSort : 'level', page: 1,
         ...(RANKING_CLASS_KEYS.has(selected) ? { class: selected as RankingClass } : {}),
+        ...(typeof rawName === 'string' && /^[A-Za-z0-9]{1,13}$/.test(rawName.trim()) ? { name: rawName.trim() } : {}),
       };
       startNavigation(() => router.push(`/rankings?${queryString(next)}`, { scroll: false }));
     }}>
+      <label className="field">Exact character name<input name="name" defaultValue={filters.name ?? ''} maxLength={13} pattern="[A-Za-z0-9]{1,13}" autoComplete="off" placeholder="Optional" /></label>
       <label className="field">Rank by<select name="sort" defaultValue={filters.sort}>{RANKING_SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
       <label className="field">Class<select name="class" defaultValue={selectedClass}>
         <option value="">All classes</option>
@@ -170,11 +175,11 @@ export function LiveRankings({ initialResponse, filters }: {
       {!data ? <EmptyState title={busy ? 'Finding the latest standings…' : 'The standings are temporarily unavailable.'}>
         {busy ? 'Loading the latest character records.' : 'Please try again shortly. Rankings will retry automatically.'}
       </EmptyState> : <>
-        <p className={styles.summary}>{total?.toLocaleString('en-US')} {filters.job || filters.class ? 'matching characters' : 'characters'}
+        <p className={styles.summary}>{total?.toLocaleString('en-US')} {filters.job || filters.class || filters.name ? 'matching characters' : 'characters'}
           {data.entries.length > 0 && <> · Showing {((filters.page - 1) * PAGE_SIZE + 1).toLocaleString('en-US')}–{((filters.page - 1) * PAGE_SIZE + data.entries.length).toLocaleString('en-US')}</>}
         </p>
-        {data.entries.length > 0 ? <RankingTable entries={data.entries} sort={filters.sort} /> : <EmptyState title={filters.page > 1 ? 'No characters on this page.' : 'The hall is waiting for its heroes.'}>
-          {filters.page > 1 ? 'The standings have changed. Return to the first page to see the latest rankings.' : filters.job || filters.class ? 'No characters match this class yet. Try viewing all classes.' : 'New characters will appear here automatically, starting at Level 1.'}
+        {data.entries.length > 0 ? <RankingCards entries={data.entries} sort={filters.sort} /> : <EmptyState title={filters.page > 1 ? 'No characters on this page.' : 'The hall is waiting for its heroes.'}>
+          {filters.page > 1 ? 'The standings have changed. Return to the first page to see the latest rankings.' : filters.name ? 'No character with that exact name is in the current public standings.' : filters.job || filters.class ? 'No characters match this class yet. Try viewing all classes.' : 'New characters will appear here automatically, starting at Level 1.'}
         </EmptyState>}
       </>}
     </div>
@@ -185,6 +190,6 @@ export function LiveRankings({ initialResponse, filters }: {
       <span>Page {filters.page}{pages !== null && <> of {pages}</>}</span>
       {pages !== null && filters.page < pages && <Link href={`/rankings?${queryString({ ...filters, page: filters.page + 1 })}`} scroll={false}>Next</Link>}
     </nav>
-    <p className="data-note">{filters.sort === 'level' ? 'Level rankings use level, then current EXP.' : filters.sort === 'fame' ? 'Fame rankings use fame first, then level and current EXP.' : `${rankingSortOption(filters.sort).label} rankings use the recorded total first, then level and current EXP.`} Ties use a stable server order. Staff and banned accounts are excluded. Updates automatically about every 20 seconds.</p>
+    <p className="data-note">{filters.sort === 'level' ? 'Level rankings use level, then current EXP.' : filters.sort === 'fame' ? 'Fame rankings use fame first, then level and current EXP.' : `${rankingSortOption(filters.sort).label} rankings use the recorded total first, then level and current EXP.`} Ties use a stable server order. Updates automatically about every 60 seconds.</p>
   </>;
 }

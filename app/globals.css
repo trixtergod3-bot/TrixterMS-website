@@ -5378,3 +5378,5 @@ a {
     width: 100%;
   }
 }
+.profile-appearance-unavailable { width: 136px; min-width: 136px; height: 90px; min-height: 90px; padding: 12px; border-radius: 10px; text-align: center; align-content: center; gap: 5px; color: #b8c8bc; font-size: 10px; }
+.profile-appearance-unavailable strong { color: #f0ca79; font-size: 12px; }

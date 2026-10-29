@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { portalRequest, validatePortalData } from '../lib/portal/data.ts';
-import { createPublicReader } from '../lib/portal/public-data.ts';
+import { createPublicReader, publicRequest } from '../lib/portal/public-data.ts';
 import { inspectText, inspectPublicationPath } from '../tools/check-security.mjs';
 import { PUBLIC_CLASS_FILTERS } from '../bridge/src/jobs.mjs';
 import { RANKING_SORTS } from '../bridge/src/rankings.mjs';
@@ -26,6 +26,15 @@ void test('class filters preserve carrier distinction without changing numeric j
   assert.equal(portalRequest('/api/rankings', { class: 'phantom' }).query.get('class'), 'phantom');
   assert.equal(portalRequest('/api/rankings', { sort: 'nx-credit-earned' }).query.get('sort'), 'nx-credit-earned');
   for (const query of [{ class: 'paladin', job: 122 }, { class: 'unknown' }, { world: 256 }, { job: 100000 }]) assert.throws(() => portalRequest('/api/rankings', query));
+});
+
+void test('exact character search uses the bounded public character collection route', () => {
+  const request = publicRequest('/api/public/characters', { name: 'PineArrow', sort: 'level', page: 1, limit: 1 });
+  assert.equal(request.path, '/api/public/characters');
+  assert.equal(request.query.get('name'), 'PineArrow');
+  assert.equal(request.query.get('limit'), '1');
+  assert.throws(() => publicRequest('/api/public/characters', { name: 'A'.repeat(14) }));
+  assert.throws(() => publicRequest('/api/public/rankings', { name: 'PineArrow' }));
 });
 
 void test('browser and bridge ranking allowlists cannot drift independently', () => {
