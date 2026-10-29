@@ -3,13 +3,13 @@
   "chatId": "01a097bc-a872-7e23-a986-467c79bff2bf",
   "chatSlug": "live-rankings-01a097bc",
   "chatTitle": "Add live rankings telemetry bridge",
-  "task": "Resume existing live rankings bridge and prepare verified official game download links; stage source/preview only pending final gameplay and release gate.",
+  "task": "Owner paused rankings; prioritize working official download and update to latest qualified build through existing release owner/publisher.",
   "status": "BLOCKED",
   "localWorktree": "C:\\Users\\Studio PC\\Documents\\ChatGPT\\TrixterMS\\local\\live-rankings-activation-01a097bc",
   "branch": "codex/live-rankings-activation-01a097bc",
   "publicationBranch": "codex/live-rankings-activation-01a097bc",
-  "localHead": "b25d175bb8e92248e387440ef33dd140daadb073",
-  "latestCommit": "b25d175bb8e92248e387440ef33dd140daadb073",
+  "localHead": "d95c0463d8be1eb8f60f9363f424c695a6bc9263",
+  "latestCommit": "d95c0463d8be1eb8f60f9363f424c695a6bc9263",
   "pushedToGithub": true,
   "implemented": true,
   "tested": true,
@@ -17,15 +17,18 @@
   "ownerAccepted": false,
   "deployed": false,
   "filesTouched": [
-    ".env.example",
+    "bridge/schema.sql",
+    "bridge/README.md",
+    "bridge/tests/bridge.test.mjs",
+    "docs/WEBSITE_TELEMETRY_RANKINGS_V2.md",
     "docs/LIVE_RANKINGS_ACTIVATION.md",
     "docs/coordination/chats/live-rankings-01a097bc.json",
     "docs/coordination/chats/live-rankings-01a097bc.md"
   ],
   "dependencies": [
-    "Existing Linux owner privileged session for reviewed view/SELECT-only reader validation and one supervised bridge.",
-    "Authenticated HTTPS bridge path and server-only website URL/token settings.",
-    "Access to the correct Hostinger Node application for deployed-SHA inspection and preview activation."
+    "Existing Linux/client release owner produces and qualifies the latest compatible signed patch and full-client distribution.",
+    "Website reads promoted current.json after existing publisher verifies immutable uploads.",
+    "Rankings remain paused until the owner resumes that work."
   ],
   "collisionRisks": [
     "Preserve current Linux R4 and sole release writer; this lane performs no game/DB/hosting mutations.",
@@ -33,26 +36,26 @@
     "Keep current public sequence 18 and private QA candidates separate; no release-feed promotion."
   ],
   "remainingWork": [
-    "Linux owner validates/provisions current restricted view and reader, compatible Node, one supervised bridge and authenticated HTTPS.",
-    "Hosting owner inspects current app SHA/settings, integrates reviewed candidate without dropping newer work, and connects preview.",
-    "Prove real current DB integration and owner creation/progress/logout acceptance."
+    "Latest download/update upload belongs to existing release owner; no second publisher started.",
+    "After promotion, verify public download page links, release/manifest agreement and archive availability.",
+    "If rankings resume: keep V2 package/view matched, resolve whether current-NX account balance ranking is intended public, then validate reader/service/HTTPS and real rows."
   ],
   "ownerQa": [
-    "After activation, open https://trixterms.com/rankings, note total, manually create a uniquely named Level 1 character in the native game client, then wait 10-30 seconds after commit.",
-    "Gain EXP/levels, let the server save or log out, and confirm changed standing and persistence. Owner acceptance remains explicit."
+    "For current release, new players need the full-client ZIP, not a launcher-only empty folder.",
+    "Native authentication and the latest client/server acceptance remain with existing release/QA owners."
   ],
-  "sourceCoverage": "This checkpoint adds the missing metadata URL example and current activation documentation atop a4625be; existing ranking/download/bridge implementation reused unchanged.",
+  "sourceCoverage": "Existing source integrated with actual deployed registration branch; V2 all-created-character source correction is published but unactivated. Download priority produced read-only public checks, not a new game package.",
   "evidence": [
-    "2026-10-27: 34/34 focused website tests and 40/40 bridge tests passed; production build including TypeScript passed on Node 24.19.0/npm 11.17.0.",
-    "One production preview at 127.0.0.1:4349: rankings page 200, disconnected API 503/null data; download page 200 with exact live sequence 18 links; 390px no overflow and zero page errors. Preview stopped and listener closed.",
-    "Public downloads 200; displayed links match official metadata; raw manifest SHA matches and sequence/release agree; both archives HEAD 200 with expected lengths. Archive bodies/signature/native gameplay not reverified.",
-    "Public rankings page 200; /api/rankings and /api/status 503; /api/public/rankings 400. Live integration not proven.",
-    "Initial SSH read-only probe: trixter-server; game/MariaDB active, DB loopback 3306; no Node/npm on PATH or listener 4316. Retry: both checked bridge service names absent; sudo database metadata query requires interactive authentication. No view/reader existence claim.",
-    "Hostinger browser navigation and native window inspection timed out; hosting account/settings/deployed SHA not observed. patch.trixterms.com HTTPS fails.",
-    "Narrow independent review corrected the local-development-only HTTP statement; no remaining material finding.",
-    "Source checkpoint remote SHA verified b25d175bb8e92248e387440ef33dd140daadb073; no game, database, client, hosting or public feed mutation."
+    "Source checkpointd95c0463d8be1eb8f60f9363f424c695a6bc9263 remote SHA verified. Deployed17a1dbd9 is an ancestor of the candidate; registration and download text retained.",
+    "40 bridge tests,36 affected website tests, production build and security scan175source/57bundles passed. Synthetic/local HTTP sources only; no real rankings integration claimed.",
+    "Authenticated Hostinger inspection observed current codex/direct-registration-20261028 at17a1dbd9 and no READ_API_URL/TOKEN setting names; no values copied and no settings changed.",
+    "Linux fixed metadata check confirmed core/counter columns; no player/account rows read. No view/reader/service/proxy installation by this lane.",
+    "Direct owner paused rankings and prioritized latest working downloads. Automatic review rejected the pending rankings inspection because it was no longer authorized; not retried. Own sudo cache invalidated and SSH session closed.",
+    "2026-10-29 public download page200; exact official launcher/full-client links both200 with expected lengths68698039/3377572211 and byte ranges. Feed remains sequence18. New-player full-client guidance present. Large unchanged archives not rehashed.",
+    "Current new-login client is local QA only; complete current combined candidate has release-qualification dependencies under existing owners. No public feed/client package change by this lane."
   ],
-  "lastUpdated": "2026-10-27T13:14:08.7209608Z",
-  "blocker": "Linux bridge activation needs its existing owner privileged session (sudo requires interactive authentication); compatible Node/service and authenticated HTTPS are not established. Correct Hostinger app settings are inaccessible in this session. Live rankings remain unavailable.",
-  "nextAction": "Linux owner activates/validates the reviewed read boundary and HTTPS bridge; hosting owner connects the candidate preview, then this lane runs real DB-to-browser verification."
+  "lastUpdated": "2026-10-29T01:07:08.8310965Z",
+  "blocker": "Latest new-login/client build is not in official sequence18; current private combined candidate lacks release qualification/freeze. Existing release owner handles packaging/publishing. No rankings activation.",
+  "nextAction": "Existing release/publisher owner freezes and uploads the compatible latest client/update, then this website lane verifies promoted download metadata and links.",
+  "rankingsPaused": true
 }
