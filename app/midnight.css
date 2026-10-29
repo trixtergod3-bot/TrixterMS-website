@@ -174,6 +174,14 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,s
   border-bottom:2px solid transparent;
 }
 
+.portal-desktop-nav>a.portal-nav-download {
+  color:#e9fbff;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.035em;
+  text-shadow:0 0 12px #3ddcff99;
+}
+
 .portal-desktop-nav>a[aria-current=page] {
   color:#a5eaff;
   border-color:#70ddff;

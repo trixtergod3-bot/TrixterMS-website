@@ -8,43 +8,43 @@ export const metadata: Metadata = { title: 'Download TRIXTERMS', description: 'D
 export const dynamic = 'force-dynamic';
 function Artifact({ artifact, title }: { artifact: DownloadArtifact; title: string }) {
   return <article className="portal-panel"><Download aria-hidden="true" /><h3>{title === 'Launcher' ? 'PUBLIC BETA LAUNCHER' : 'FULL PUBLIC BETA CLIENT'}</h3>
-    <p>{title === 'Launcher' ? 'Small download. Installs or updates TRIXTERMS automatically.' : 'Complete game package. Extract, launch and play.'}</p><p>Windows x64 · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MiB</p>
-    <a className={title === 'Launcher' ? 'button button-primary' : 'button button-secondary'} href={artifact.url} rel="noopener noreferrer">{title === 'Launcher' ? 'DOWNLOAD LAUNCHER' : 'DOWNLOAD FULL CLIENT'}</a>
+    <p>{title === 'Launcher' ? 'For an existing complete client. Checks and applies signed updates.' : 'Complete game package. Extract, launch and play.'}</p><p>Windows x64 · {(artifact.sizeBytes / 1024 / 1024).toFixed(1)} MiB</p>
+    <a className={title === 'Full client' ? 'button button-primary' : 'button button-secondary'} href={artifact.url} rel="noopener noreferrer">{title === 'Launcher' ? 'DOWNLOAD LAUNCHER' : 'DOWNLOAD FULL CLIENT'}</a>
     <details><summary>SHA-256 checksum</summary><code className="checksum">{artifact.sha256}</code></details>
   </article>;
 }
 export default async function DownloadPage() {
   const downloads = await getReleaseDownloads();
   return <main>
-    <PageHero eyebrow="TRIXTERMS · GMS v111.1" title="Your next adventure."
-      description="Get the game, create your account, and make your mark on TRIXTERMS."
+    <PageHero eyebrow="TRIXTERMS · GMS v111.1" title="Download TRIXTERMS."
+      description="Create an account, download the launcher, and begin through MapleStory’s native sign-in screen."
       aside={<div className="hero-stat"><Gamepad2 aria-hidden="true" /><strong>Windows</strong><span>native game client</span></div>} />
     <section className="shell portal-section" aria-labelledby="download-title">
       <div className="section-heading"><div><span className="eyebrow">Download center</span><h2 id="download-title">Get TRIXTERMS</h2></div>
         <Link className="button button-secondary" href="/patch-notes">Patch notes</Link></div>
       {downloads ? <>
-        <p>Published beta · Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion}</p>
+        <p>Published beta · Current version: <strong>{downloads.releaseVersion}</strong> · {downloads.clientVersion} · Native account login</p>
         <div className="portal-grid">
 
-          {downloads.launcher && <Artifact artifact={downloads.launcher} title="Launcher" />}
           {downloads.fullClient && <Artifact artifact={downloads.fullClient} title="Full client" />}
+          {downloads.launcher && <Artifact artifact={downloads.launcher} title="Launcher" />}
         </div>
         {downloads.manifest && <details><summary>Release verification details</summary><p><a href={downloads.manifest.url} rel="noopener noreferrer">Release manifest</a> · sequence {downloads.manifest.sequence}. The launcher authenticates the signed manifest and verifies managed files before applying updates.</p></details>}
       </> : <div className="portal-panel"><span className="eyebrow">Release preparation</span>
-        <h3>The next journey is getting ready.</h3><p>Beta downloads will appear here when the client and launcher are published. Current release version and patch status are awaiting publication.</p>
+        <h3>The next journey is getting ready.</h3><p>The official launcher and full client will appear here only after their published hashes and release manifest are verified. Registration can open independently once its protected account gateway is live.</p>
         <span className="button button-disabled" aria-disabled="true">Downloads coming soon</span>
         <p>Follow release announcements for availability.</p><Link href="/discord">Visit the community page</Link></div>}
     </section>
     <section className="shell portal-section" aria-labelledby="installation-title">
       <div className="section-heading"><div><span className="eyebrow">Three steps to play</span><h2 id="installation-title">A fresh start.</h2></div></div>
       <div className="portal-grid portal-grid-three">
-        <article className="portal-panel"><span className="section-index">01</span><h3>Create your account</h3><p>Register your account ID and password through the registration page when it opens.</p><Link href="/register">Account registration</Link></article>
+        <article className="portal-panel"><span className="section-index">01</span><h3>Create your account</h3><p>Register one account ID and password. Those exact credentials are used on the native MapleStory sign-in screen.</p><Link href="/register">Open registration</Link></article>
         <article className="portal-panel"><span className="section-index">02</span>
-          <h3>{downloads?.launcher ? 'Install with the launcher' : 'Install the game'}</h3>
-          {downloads?.fullClient && !downloads.launcher ? <p>Download the full client and extract the entire archive into a writable folder. Keep its files together. If you download the launcher separately, place it in that same folder.</p>
-            : downloads?.launcher ? <p>Download the launcher into your chosen writable installation folder. If it comes in a ZIP, extract it there first. The launcher can be the only file in this folder; click UPDATE after the initial check. It downloads and verifies the game files for you.</p>
-              : <p>Installation instructions will match the published package. A launcher-only release installs the game into your chosen folder; a full-client archive is extracted there.</p>}
-          {downloads?.fullClient && <p>For the full client, extract the ZIP into a writable folder and open its included launcher. It verifies existing files and downloads only files that need updating or repair.</p>}{downloads && <p>Open the supplied launcher executable without renaming it.</p>}
+          <h3>{downloads?.fullClient ? 'Install the full client' : 'Install the game'}</h3>
+          {downloads?.fullClient ? <p>New player? Download the full client and extract the entire ZIP into a writable folder. Keep its files together and open the included launcher.</p>
+            : downloads?.launcher ? <p>The launcher-only ZIP is for an existing complete installation. Extract it into your game folder. New installations need the full-client package.</p>
+              : <p>Installation instructions will match the published full-client package.</p>}
+          {downloads && <><p>The launcher checks for signed updates whenever it opens and downloads files that need updating or repair. Wait for the checks to finish before playing.</p><p>Open the supplied launcher executable without renaming it.</p></>}
         </article>
         <article className="portal-panel"><span className="section-index">03</span><h3>Launch and sign in</h3><p>PLAY stays disabled while the launcher checks, updates, and verifies your files. Wait for Ready to play, then press PLAY and enter your ID and password on MapleStory’s native login screen.</p></article>
       </div>

@@ -64,26 +64,27 @@ function assertPublicPresentation(html: string, visibleText: string) {
   assert.match(visibleText, /SHA-256/);
 }
 
-void test('enabled launcher-only download renders bootstrap instructions and exact artifact URL without legacy display branding', async () => {
+void test('launcher-only download preserves exact URL and requires an existing complete installation', async () => {
   const { html, visibleText, downloads } = await renderDownload(false);
   assertPublicPresentation(html, visibleText);
-  assert.match(visibleText, /Install with the launcher/);
-  assert.match(visibleText, /only file in this folder/);
-  assert.match(visibleText, /downloads and verifies the game files/);
+  assert.match(visibleText, /existing complete installation/);
+  assert.match(visibleText, /New installations need the full-client package/);
+  assert.doesNotMatch(visibleText, /only file in this folder/);
   assert.doesNotMatch(visibleText, /Download the full client and extract/);
   assert.equal(downloads.launcher?.filename, launcher.filename);
   assert.equal(downloads.launcher?.url, launcher.url);
   assert.equal(downloads.fullClient, null);
 });
 
-void test('both production choices render with launcher first', async () => {
+void test('fresh installs prioritize the full client and preserve both production URLs', async () => {
   const { html, visibleText, downloads } = await renderDownload(true);
   assertPublicPresentation(html, visibleText);
   assert.match(visibleText, /DOWNLOAD LAUNCHER/);
   assert.match(visibleText, /Windows x64/);
   assert.match(visibleText, /PLAY stays disabled/);
-  assert.match(visibleText, /click UPDATE/);
-  assert.match(visibleText, /only file in this folder/);
+  assert.match(visibleText, /Install the full client/);
+  assert.doesNotMatch(visibleText, /only file in this folder/);
+  assert.ok(html.indexOf(`href="${fullClient.url}"`) < html.indexOf(`href="${launcher.url}"`));
   assert.ok(html.includes(`href="${fullClient.url}"`));
   assert.equal(downloads.fullClient?.url, fullClient.url, 'Legacy metadata contract remains compatible');
 });
