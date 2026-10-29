@@ -1,8 +1,20 @@
-# Live rankings activation checkpoint — 2026-10-27
+# Live rankings activation checkpoint — 2026-10-29
 
 The existing bridge and website are the implementation. This checkpoint reuses website baseline `a4625be080622068b59c04ab6f0298e61621c0bf`, including the nine ranking modes, class-line filters, RC1 routes and official download-feed reader. It does not replace the separately owned website polish or Astral candidates. No game runtime, database, client, hosting setting or public release feed was changed.
 
-## Current observations
+## Current integration and gate
+
+Authenticated Hostinger inspection on October 29 observed current deployment `17a1dbd9cceed196cf5ad0d873fd127e643ae025` on `codex/direct-registration-20261028`. Its environment lists registration/download settings but no `TRIXTER_READ_API_URL` or `TRIXTER_READ_API_TOKEN`. This is now an observed hosting baseline; the earlier access blocker is superseded. No environment values were copied into evidence and no hosting setting changed.
+
+That exact deployed commit is an ancestor of integration commit `8b12cad78ce629593a2b75a67693a46e6e0845c9` on this existing lane. Registration page, registration proxy configuration and the newer full-client download text/tests are preserved. Do not deploy the older standalone checkpoint `6af8f23` over the current application.
+
+Source reconciliation: older checkout `cd0aa7c` and RC1 `9caa937` use the already unfiltered nine-column `trixter_public_characters_v1`. The current V2 candidate uses `trixter_public_rankings_v2` with additional approved ranking metrics and previously excluded staff/banned accounts. The owner's October 29 request explicitly requires all created characters, including admin/GM. The V2 source now removes those eligibility filters and unused staff/ban column grants; it is driven by existing characters with left enrichment joins. No account without a character creates an entry. Keep each bridge adapter, schema and column/grant validator together; a V1 view cannot satisfy a V2 adapter.
+
+The integrated candidate passed 40 bridge tests, 36 affected website tests, a production build including TypeScript, and the security scan (175 source files, 57 browser bundles, zero findings). Pagination/order, Level 1, public projection, authenticated loopback HTTP, transient outages and download rendering were covered with synthetic/local sources. Existing native/browser evidence for unchanged code is reused; no optional preview or gameplay audit was repeated.
+
+Linux owner observations identify current `/opt/trixterms/releases/trix-20261029-ordinary-filter-r5`, with MariaDB on loopback and no activated rankings bridge/view/reader. This lane's fixed schema-metadata-only check stopped at `sudo: interactive authentication is required`; it read no player/account rows. No Node command was found on PATH. An existing administrator session must complete the protected schema/reader/service/HTTPS checks before the Hostinger app is changed. No real Linux-to-browser rankings verification is claimed.
+
+## Retained October 27 observations
 
 | Surface | Observed result |
 | --- | --- |

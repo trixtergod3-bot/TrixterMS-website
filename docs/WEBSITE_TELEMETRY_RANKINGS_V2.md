@@ -35,10 +35,11 @@ components, credentials, contact fields, network identifiers, or staff flags.
 
 ## Eligibility and class filters
 
-The V2 SQL view includes existing characters only when both `characters.gm=0`
-and the joined account has `accounts.gm=0` and `accounts.banned=0`. Level 1,
-offline, unguilded, and unfamiliar-job characters remain eligible. No player
-row is written by this system.
+Under the owner's 2026-10-29 request, the V2 SQL view includes all persisted
+characters, including admin/GM, Level 1, offline, unguilded and unfamiliar jobs.
+It reads no staff/ban flags and applies no account eligibility filter. Left
+joins preserve character rows; an account without a character produces no row.
+No player row is written by this system. This supersedes the earlier exclusions.
 
 The class selector is driven by one reviewed list covering Beginner, Explorer
 class lines, Cygnus, Aran, Evan, Mercedes, Phantom, Demon Slayer, Demon Avenger,
@@ -64,7 +65,8 @@ consumers have been inspected. The schema source intentionally uses no
 
 ## Owner QA after activation
 
-1. Confirm staff and banned-account characters are absent.
+1. Confirm existing staff, Level 1 and offline characters are included, and
+   accounts without characters produce no synthetic entry.
 2. Compare each ranking score with one controlled character's database-backed
    total without publishing private rows.
 3. Verify two characters on one account produce one row in Current NX, while
