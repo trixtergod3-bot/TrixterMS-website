@@ -29,7 +29,7 @@ SELECT
   CAST(COALESCE(tm.counter_value, 0) AS CHAR) AS mesosEarned,
   CASE WHEN c.id = (
     SELECT c2.id FROM characters AS c2
-    WHERE c2.accountid = c.accountid AND c2.gm = 0
+    WHERE c2.accountid = c.accountid
     ORDER BY c2.level DESC, c2.exp DESC, c2.id ASC
     LIMIT 1
   ) THEN CAST(
@@ -41,7 +41,7 @@ SELECT
   CAST(COALESCE(tnc.counter_value, 0) AS CHAR) AS nxCreditEarned,
   CAST(COALESCE(tnp.counter_value, 0) AS CHAR) AS nxPrepaidEarned
 FROM characters AS c
-JOIN accounts AS a ON a.id = c.accountid
+LEFT JOIN accounts AS a ON a.id = c.accountid
 LEFT JOIN guilds AS g ON g.guildid = c.guildid
 LEFT JOIN trixter_telemetry_character_counters AS te
   ON te.character_id = c.id
@@ -62,7 +62,4 @@ LEFT JOIN trixter_telemetry_character_counters AS tnc
 LEFT JOIN trixter_telemetry_character_counters AS tnp
   ON tnp.character_id = c.id
   AND tnp.metric_key = 'economy.nx_earned'
-  AND tnp.dimension_key = 'nx_prepaid'
-WHERE c.gm = 0
-  AND a.gm = 0
-  AND a.banned = 0;
+  AND tnp.dimension_key = 'nx_prepaid';

@@ -44,7 +44,7 @@ Each entry contains exactly `rank`, `name`, `level`, `exp` (decimal string), `jo
 
 The source schema is documented in `server/sql/seperate/12-characters.sql`, `31-guilds.sql`, and `65-queststatus.sql`; those are alternate schema documentation, **not additive migrations to import**. The baseline import authority remains `server/sql/aio/lidium.sql` plus reviewed applied migrations.
 
-The V2 view in [schema.sql](schema.sql) projects the public character fields, current mesos, five approved lifetime telemetry counters, and an account-representative combined NX balance. It joins guild display name and uses account/character GM and ban flags only for eligibility. `MapleClient.deleteCharacter` physically deletes `characters`; there is no `deleted` or `active` flag. Every persisted non-deleted, non-staff character on a non-staff, non-banned account is eligible, including level one and unfamiliar job IDs. There is no minimum-level, recent-login, or online filter. A bad row fails the whole snapshot visibly rather than silently dropping a character.
+The V2 view in [schema.sql](schema.sql) projects the public character fields, current mesos, five approved lifetime telemetry counters, and an account-representative combined NX balance. Under the owner's 2026-10-29 request, **every persisted character is eligible, including admin/GM, Level 1, offline and unfamiliar jobs**. There is no staff, ban, minimum-level, recent-login or online filter. `characters` drives the result; all enrichment joins are left joins, so an account without a character cannot produce a synthetic entry. Account/character staff and ban flags are not read. `MapleClient.deleteCharacter` physically deletes `characters`; there is no `deleted` or `active` flag. A bad row fails the whole snapshot visibly rather than silently dropping a character. This explicit request supersedes earlier audit guidance to exclude staff/banned accounts.
 
 `MapleCharacter.getDefault` starts normal creation at level 1. `saveNewCharToDB` inserts the character and commits the transaction before successful creation is acknowledged. Logout leaves the character row intact. The old `RankingWorker` is deliberately not used: its level-30 threshold, job allowlist, rank writes, and fame tiebreaker conflict with this contract.
 
@@ -77,9 +77,9 @@ Existing relevant source indexes include `characters.PRIMARY(id)`, `guilds.PRIMA
 4. Create `trixter_public_definer@localhost` as a dedicated locked account through protected administrator input. Give it only the following column grants (use the verified schema name if it differs):
 
 ```sql
-GRANT SELECT (id, accountid, world, name, level, exp, job, fame, guildid, gm, meso)
+GRANT SELECT (id, accountid, world, name, level, exp, job, fame, guildid, meso)
   ON trixterms_dev.characters TO 'trixter_public_definer'@'localhost';
-GRANT SELECT (id, banned, gm, NxPrepaid, NxCredit)
+GRANT SELECT (id, NxPrepaid, NxCredit)
   ON trixterms_dev.accounts TO 'trixter_public_definer'@'localhost';
 GRANT SELECT (guildid, name)
   ON trixterms_dev.guilds TO 'trixter_public_definer'@'localhost';

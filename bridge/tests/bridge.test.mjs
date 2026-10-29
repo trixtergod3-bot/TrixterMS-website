@@ -278,7 +278,7 @@ test('driver requests a single bounded read from the safe view with timeouts', a
   await source.close(); assert.equal(closed, true);
 });
 
-test('SQL view preserves DA semantics, approved telemetry, and public eligibility filters', async () => {
+test('SQL view preserves DA semantics and includes all existing characters without private identity fields', async () => {
   const sql = (await readFile(new URL('../schema.sql', import.meta.url), 'utf8'))
     .split('\n').filter((line) => !line.trimStart().startsWith('--')).join('\n');
   assert.match(sql, /SQL SECURITY DEFINER/u);
@@ -288,10 +288,11 @@ test('SQL view preserves DA semantics, approved telemetry, and public eligibilit
   assert.match(sql, /BINARY q\.customData = BINARY 'TRIXTER_DA_WARRIOR_CARRIER_V1'/u);
   assert.match(sql, /AND EXISTS \(/u);
   assert.match(sql, /LEFT JOIN guilds AS g ON g\.guildid = c\.guildid/u);
-  assert.match(sql, /JOIN accounts AS a ON a\.id = c\.accountid/u);
-  assert.match(sql, /c\.gm = 0/u);
-  assert.match(sql, /a\.gm = 0/u);
-  assert.match(sql, /a\.banned = 0/u);
+  assert.match(sql, /FROM characters AS c\s+LEFT JOIN accounts AS a ON a\.id = c\.accountid/u);
+  // The owner's 2026-10-29 contract includes staff and all saved characters.
+  // Drive the result from characters, never fabricate one for an empty account.
+  assert.doesNotMatch(sql, /\b(?:c|c2|a)\.(?:gm|banned)\b/u);
+  assert.doesNotMatch(sql, /\b(?:UNION|RIGHT JOIN|FULL JOIN)\b/iu);
   assert.match(sql, /economy\.nx_earned/u);
   assert.match(sql, /dimension_key = 'nx_credit'/u);
   assert.match(sql, /dimension_key = 'nx_prepaid'/u);
